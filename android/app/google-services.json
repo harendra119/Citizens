@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "596631999489",
+    "firebase_url": "https://the-citizens-default-rtdb.firebaseio.com",
+    "project_id": "the-citizens",
+    "storage_bucket": "the-citizens.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596631999489:android:8cfac96760801c9f555c00",
+        "android_client_info": {
+          "package_name": "com.citizens"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "596631999489-tbchmrujn3441df86pq9j6n8jj0s16nc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.citizens",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "596631999489-jhc3dgjio2trmjfa4hdc78b5nh1lsgq3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD48VReKcxKYS5x0tDTF2-4WZlzKrqKQRI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "596631999489-jhc3dgjio2trmjfa4hdc78b5nh1lsgq3.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "596631999489-mrcgg8e0qt86bf17msbsfihg5ims4or3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.ios.citizens"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
