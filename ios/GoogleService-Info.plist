@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>596631999489-mrcgg8e0qt86bf17msbsfihg5ims4or3.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.596631999489-mrcgg8e0qt86bf17msbsfihg5ims4or3</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>596631999489-tbchmrujn3441df86pq9j6n8jj0s16nc.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCZADezu4rspnz1NE2A2afk9i-64ZKbbhI</string>
+	<key>GCM_SENDER_ID</key>
+	<string>596631999489</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.ios.citizens</string>
+	<key>PROJECT_ID</key>
+	<string>the-citizens</string>
+	<key>STORAGE_BUCKET</key>
+	<string>the-citizens.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:596631999489:ios:187102bfeabf0da6555c00</string>
+	<key>DATABASE_URL</key>
+	<string>https://the-citizens-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>
