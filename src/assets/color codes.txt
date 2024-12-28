@@ -1,0 +1,8 @@
+Logo colors :
+red #fe0000
+yellow #F7F7F7
+green #1CFF00
+red #FE0000
+
+blue color that is used through out the app :
+18234A
