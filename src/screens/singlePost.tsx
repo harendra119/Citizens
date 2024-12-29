@@ -1,6 +1,7 @@
 import firestore from '@react-native-firebase/firestore';
 import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   FlatList,
   Image,
   Keyboard,
@@ -26,6 +27,10 @@ import {
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
 import { Item } from 'react-native-paper/lib/typescript/components/Drawer/Drawer';
+import Utility, { DEVICE_WIDTH } from '../utils/Utility';
+import AppModalView from '../components/appModal/AppModalView';
+import UserInfoService from '../utils/UserInfoService';
+import { firebaseDbObject } from '../utils/FirebseDbObject';
 
 const SinglePost = ({ navigation, route }) => {
   console.log('mohit', route.params?.postData);
@@ -37,6 +42,9 @@ const SinglePost = ({ navigation, route }) => {
   const [lastDoc, setLastDoc] = useState();
   const [input, setInput] = useState('');
   const [kHeight, setkHeight] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const [editableComment, setEditableComment] = useState<any>(null);
+
 
   const userProfile = useSelector((state) => state.user.userProfile);
 
@@ -89,15 +97,36 @@ const SinglePost = ({ navigation, route }) => {
     postViewsUpdate();
 
     try {
-      const ref = firestore()
+      const commentsRef = firestore()
         .collection('Posts')
         .doc(id)
         .collection('Comments')
         .limit(40)
         .orderBy('createdAt', 'desc');
-      const result = await getPartOfList({ ref, limitNum: 20 });
-      setComments(result.list);
-      setLastDoc(result.lastDoc);
+
+      const allCommentsSnapshot = await commentsRef.get();
+
+      const blockedCommentsRef = firestore().collection('Users').doc(UserInfoService.getUserId()).collection('BlockedComments');
+      const blockedCommentsSnapshot = await blockedCommentsRef.get();
+
+      // Create a set of blocked comment IDs
+      const blockedCommentIds = new Set(
+        blockedCommentsSnapshot.docs.map((doc) => doc.id)
+      );
+
+      // Step 3: Filter out blocked comments
+      const visibleComments = allCommentsSnapshot.docs.filter((doc) => {
+        return !blockedCommentIds.has(doc.id); // Exclude blocked comments
+      });
+
+
+      // const result = await getPartOfList({ ref, limitNum: 40 });
+      setComments(visibleComments.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        docId: doc.id
+      })));
+      // setLastDoc(result.lastDoc);
     } catch (error) {
       defaultAlert();
       errorLog('while getting top trending posts', error);
@@ -116,7 +145,7 @@ const SinglePost = ({ navigation, route }) => {
         .limit(15)
         .after(lastDoc);
       const result = await getPartOfList({ ref, limitNum: 15 });
-     
+
       setComments([...comments, ...result.list]);
       setLastDoc(result.lastDoc);
     } catch (error) {
@@ -128,6 +157,80 @@ const SinglePost = ({ navigation, route }) => {
   useEffect(() => {
     getComments();
   }, [commensq]);
+
+  const blockComment = (item) => {
+    Utility.showMessageWithActionCancel(async () => {
+      try {
+        // Add to user's blocked comments
+        const blockedCommentRef = firebaseDbObject
+          .collection('Users')
+          .doc(UserInfoService.getUserId())
+          .collection('BlockedComments')
+          .doc(item.docId);
+
+        await blockedCommentRef.set({ postId: id });
+        // Increment blocked count on the comment document
+        const commentRef = firebaseDbObject
+          .collection('Posts')
+          .doc(id)
+          .collection('Comments')
+          .doc(item.docId);
+
+        await commentRef.update({
+          blockedCount: firestore.FieldValue.increment(1),
+        });
+        getComments();
+        console.log('Comment blocked successfully.');
+      } catch (error) {
+        Alert.alert('Error', 'Failed to block the comment. Please try again later.');
+      }
+
+    }, () => { }, 'Are you sure you want to block this comment', 'Block comment')
+  }
+
+  const deleteComment = (item) => {
+    Utility.showMessageWithActionCancel(() => {
+      try {
+        firestore()
+          .collection('Posts')
+          .doc(id)
+          .collection('Comments')
+          .doc(item.docId)
+          .delete().then(() => {
+            getComments();
+          });
+
+        firestore()
+          .collection('Posts')
+          .doc(id).update({
+            totalComments: firestore.FieldValue.increment(-1)
+          })
+      } catch (error) {
+        Alert.alert('Error', 'Failed to delete the comment. Please try again later.');
+      }
+
+    }, () => { }, 'Are you sure you want to delete this comment', 'Delete comment')
+  }
+
+  const editComment = () => {
+    try {
+      firestore()
+        .collection('Posts')
+        .doc(id)
+        .collection('Comments')
+        .doc(editableComment.docId)
+        .update({
+          content: editableComment.content,
+          lastEdited: firestore.Timestamp.now()
+        }).then(() => {
+          setEditableComment(null);
+          getComments();
+        })
+
+    } catch (error) {
+      Alert.alert('Error', 'Failed to edit the post. Please try again later.');
+    }
+  }
 
   const publishComment = async () => {
     if (!input || input == '') {
@@ -144,6 +247,7 @@ const SinglePost = ({ navigation, route }) => {
         profileUrl: userProfile.profileUrl || null,
         displayName: userProfile.displayName,
         createdAt: firestore.Timestamp.now(),
+        blockedCount: 0
       };
 
       setInput('');
@@ -155,8 +259,8 @@ const SinglePost = ({ navigation, route }) => {
       });
       batch.set(commentsRef, body);
       await batch.commit();
-     
-     
+
+
       setTimeout(async () => {
         if (route.params?.postData?.data?.user != userProfile.userId) {
           const refNoti = firestore().collection('Users').doc(route.params?.postData?.data?.user);
@@ -174,18 +278,18 @@ const SinglePost = ({ navigation, route }) => {
           });
           await batchInner.commit();
         }
-        
+
       }, 500);
       route.params?.commentCountIncrement &&
         route.params?.commentCountIncrement();
-       
+
     } catch (error) {
       defaultAlert();
       errorLog('commenting', error);
     }
   };
 
-  const renderComment = ({ item }) => {
+  const renderComment = ({ item, index }) => {
     console.log(item)
     const data = route.params?.postData
     const a = new firestore.Timestamp(
@@ -193,85 +297,153 @@ const SinglePost = ({ navigation, route }) => {
       item.createdAt.nanoseconds,
     );
     return (
-      <View
-        style={{
-          margin: scale(10),
-          // alignItems: 'center',
-          alignSelf: item.id == userProfile.userId ? 'flex-end' : 'flex-start',
-          maxWidth: scale(800),
-          minWidth: scale(80),
-        }}>
-          {(data.deletePost || (data.reportPost && data.userId !== data.user)) ? (
-            <TouchableOpacity 
-            onPress={() => {
-            }}
-            >
-              <Icon
-                    name="dots-three-horizontal"
-                    type="entypo"
-                    size={14}
-                    style={style.iconRight}
-                    color="#8c8c8c"
-                  />
-            </TouchableOpacity>
-            
-          ) : null
-          }
+      <>
         <View
           style={{
-            backgroundColor: '#ffffff',
-            borderRadius: mScale(10),
-            padding: mScale(10),
+            margin: 10,
+            marginTop: index == 0 ? 20 : null,
+            width: DEVICE_WIDTH - 20,
+            // alignItems: 'center',
+            alignSelf: item.id == userProfile.userId ? 'flex-start' : 'flex-start',
+            shadowColor: '#000',
+            shadowOffset: {
+              width: 0,
+              height: 1,
+            },
+            shadowOpacity: 0.18,
+            shadowRadius: 1.0,
           }}>
+
           <View
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              marginBottom: vScale(10),
+              backgroundColor: '#ffffff',
+              borderRadius: mScale(10),
+              padding: mScale(10),
             }}>
-            {item?.profileUrl ? (
-              <Image
-                source={{ uri: item?.profileUrl }}
-                style={{
-                  height: scale(25),
-                  width: scale(25),
-                  borderRadius: scale(25),
-                  marginRight: scale(7),
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: vScale(10),
+              }}>
+              {item?.profileUrl ? (
+                <Image
+                  source={{ uri: item?.profileUrl }}
+                  style={{
+                    height: scale(25),
+                    width: scale(25),
+                    borderRadius: scale(25),
+                    marginRight: scale(7),
+                  }}
+                />
+              ) : (
+                <View
+                  style={{
+                    height: scale(25),
+                    width: scale(25),
+                    borderRadius: scale(25),
+                    marginRight: scale(7),
+                    backgroundColor: '#d9d9d9',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Text style={{ fontSize: 12 }}>
+                    {renderInitials(item.displayName)}
+                  </Text>
+                </View>
+              )}
+              <Text style={{ fontWeight: 'bold', flex: 1, marginRight: 30 }} numberOfLines={1}>
+                {item?.displayName}
+              </Text>
+
+
+              <TouchableOpacity
+                onPress={() => {
+                  setShowModal(true)
                 }}
-              />
-            ) : (
-              <View
-                style={{
-                  height: scale(25),
-                  width: scale(25),
-                  borderRadius: scale(25),
-                  marginRight: scale(7),
-                  backgroundColor: '#d9d9d9',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <Text style={{ fontSize: 12 }}>
-                  {renderInitials(item.displayName)}
-                </Text>
-              </View>
-            )}
-            <Text style={{ fontWeight: 'bold' }} numberOfLines={1}>
-              {item?.displayName}
-            </Text>
+                style={{ padding: 10 }}
+              >
+                <Icon
+                  name="dots-three-horizontal"
+                  type="entypo"
+                  size={14}
+                  style={style.iconRight}
+                  color="#8c8c8c"
+                />
+              </TouchableOpacity>
+
+            </View>
+            <View style={{ marginLeft: scale(10) }}>
+              <Text>{item?.content}</Text>
+            </View>
           </View>
-          <View style={{ marginLeft: scale(10) }}>
-            <Text>{item?.content}</Text>
-          </View>
+          <Text
+            style={{
+              marginLeft: scale(8),
+              marginTop: vScale(3),
+              fontSize: mScale(10),
+            }}>
+            {moment(item.createdAt.toDate()).fromNow()}
+          </Text>
         </View>
-        <Text
-          style={{
-            marginLeft: scale(8),
-            marginTop: vScale(3),
-            fontSize: mScale(10),
-          }}>
-          {moment(item.createdAt.toDate()).fromNow()}
-        </Text>
-      </View>
+        <AppModalView
+          visible={showModal}>
+          <View style={{ paddingHorizontal: 30, paddingRight: 20, paddingTop: 15, paddingBottom: 40, backgroundColor: '#fff' }}>
+            {
+              item.id == UserInfoService.getUserId() ?
+                <>
+                  <TouchableOpacity
+                    onPress={async () => {
+                      setShowModal(false);
+                      setTimeout(() => {
+                        setEditableComment(item);
+                      }, 100);
+
+                    }}
+                    style={style.modalButton}>
+                    <Text
+                      style={style.modalText}>
+                      Edit
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={async () => {
+                      setShowModal(false);
+                      deleteComment(item)
+                    }}
+                    style={style.modalButton}>
+                    <Text
+                      style={style.modalText}>
+                      Delete
+                    </Text>
+                  </TouchableOpacity>
+
+                </>
+                : <TouchableOpacity
+                  onPress={async () => {
+                    setShowModal(false);
+                    blockComment(item)
+                  }}
+                  style={style.modalButton}>
+                  <Text
+                    style={style.modalText}>
+                    Block
+                  </Text>
+                </TouchableOpacity>
+            }
+            <TouchableOpacity
+              onPress={() => { setShowModal(false); }}
+              style={style.modalButton}>
+              <Text
+                style={style.modalText}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+
+          </View>
+        </AppModalView>
+      </>
     );
   };
 
@@ -294,6 +466,7 @@ const SinglePost = ({ navigation, route }) => {
           data={comments}
           renderItem={renderComment}
           keyExtractor={(item) => item}
+          onEndReached={getMoreComments}
         />
       </View>
       <View
@@ -335,6 +508,66 @@ const SinglePost = ({ navigation, route }) => {
           />
         </TouchableOpacity>
       </View>
+      {
+        editableComment ?
+          <AppModalView
+            visible={true}
+            customStyle={{ opacity: 0.9 }}
+          >
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgb(0, 0, 0, 0.9)' }}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                  borderColor: '#1e2348',
+                  borderWidth: 1,
+                  borderRadius: mScale(15),
+                  paddingHorizontal: scale(10),
+                  backgroundColor: '#ffffff',
+                  height: vScale(40),
+                }}>
+                <TextInput
+                  value={editableComment.content}
+                  onChangeText={(value) => setEditableComment({ ...editableComment, content: value })}
+                  placeholder="Your thoughts ..."
+                  style={{ width: scale(300) }}
+                />
+                <TouchableOpacity
+                  style={{
+                    height: scale(30),
+                    width: scale(30),
+                    borderRadius: scale(15),
+                    backgroundColor: 'green',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                  onPress={editComment}>
+                  <Icon
+                    name="caret-forward"
+                    type="ionicon"
+                    size={vScale(22)}
+                    color="white"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => {
+                  setEditableComment(null);
+                }}
+                style={{ borderRadius: 20, backgroundColor: 'white', justifyContent: 'center', alignItems: 'center', marginTop: 20, paddingHorizontal: 40, paddingVertical: 15 }}>
+                <Text style={{ fontWeight: '700', color: '#000' }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+          </AppModalView>
+          :
+          null
+      }
+
     </View>
   );
 };
@@ -359,9 +592,9 @@ const style = StyleSheet.create({
     margin: 10,
     fontSize: 12,
   },
-  iconRight: {marginRight: 20},
-  accountText: {fontSize: 18, fontWeight: 'bold'},
-  accountsCategory: {margin: 10},
+  iconRight: { marginRight: 20 },
+  accountText: { fontSize: 18, fontWeight: 'bold' },
+  accountsCategory: { margin: 10 },
   categoryContainer: {
     borderBottomColor: 'silver',
     borderBottomWidth: 2,
@@ -383,7 +616,7 @@ const style = StyleSheet.create({
     minHeight: hp(12),
     marginTop: 10
   },
-  errorStyle: {height: 0},
+  errorStyle: { height: 0 },
   buttons: {
     backgroundColor: '#1b224d',
     width: wp(30),
@@ -393,15 +626,15 @@ const style = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 20,
   },
-  buttonText: {color: '#fff', fontWeight: 'bold'},
+  buttonText: { color: '#fff', fontWeight: 'bold' },
   cardFooter: {
     height: hp(5),
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
   },
-  cardFooterInner: {flexDirection: 'row', alignItems: 'center'},
-  cardFooterInnerText: {fontSize: 12, color: '#17234e', marginLeft: 5},
+  cardFooterInner: { flexDirection: 'row', alignItems: 'center' },
+  cardFooterInnerText: { fontSize: 12, color: '#17234e', marginLeft: 5 },
   shareContainer: {
     width: wp(95),
     minHeight: hp(65),
@@ -428,7 +661,7 @@ const style = StyleSheet.create({
   modalButton: {
     height: 40, width: '100%',
     justifyContent: 'center',
-    alignItems:'center',
+    alignItems: 'center',
     backgroundColor: '#ddd',
     borderRadius: 10,
     marginBottom: 15

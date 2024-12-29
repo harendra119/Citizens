@@ -89,7 +89,7 @@ class otherUserProfile extends Component {
           selected: false,
         },
         {
-          icon: require('../assets/movie.png'),
+          icon: require('../assets/scenes.png'),
           name: 'Scenes',
           selected: false,
         },
@@ -896,6 +896,80 @@ class otherUserProfile extends Component {
           <View style={{...style.banner, backgroundColor: '#d9d9d9'}} />
         )}
         <View style={{width: DEVICE_WIDTH, flexDirection: 'row', alignItems: 'flex-start', marginTop:  wp(-10), marginBottom:  wp(-6)}}>
+        <View style={[style.bannerBottom]}>
+            {!userInfo?.isProfilePrivate &&
+              (alreadyFollower || followAllowed) ? (
+              this.state.followLoader ? (
+                <ActivityIndicator
+                  color="#18224f"
+                  style={{
+                    width: wp(20),
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderColor: '#1e2348',
+                    borderWidth: 1,
+                    borderRadius: 20,
+                    marginHorizontal: 10,
+                  }}
+                />
+              ) : (
+                !followError && (
+                  <TouchableOpacity
+                    style={{
+                      alignSelf: 'center',
+                      width: wp(20),
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      borderColor: '#1e2348',
+                      borderWidth: 1,
+                      borderRadius: 20,
+                    }}
+                    onPress={() => {
+                      //     alert(item._id)
+                      if (!alreadyFollower) {
+                        this.onSendFollowRequest();
+                      } else {
+                        this.unFollow();
+                      }
+                      // this.setState({loader:true})
+                    }}>
+                    <Text style={{ color: '#1e2348' }}>
+                      {alreadyFollower ? 'Unfollow' : 'Follow'}
+                    </Text>
+                  </TouchableOpacity>
+                )
+
+              )
+            ) : null}
+
+
+            {this.state.alreadyMuted &&
+              (<View style={{
+                marginTop: 10,
+              }}>
+                <TouchableOpacity
+                  style={{
+                    width: wp(20),
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderColor: '#1e2348',
+                    borderWidth: 1,
+                    borderRadius: 20,
+                    marginHorizontal: 10,
+                    padding: 2
+                  }}
+                  onPress={() => {
+                    this.muteUser(userInfo.displayName);
+                  }}
+                >
+                  <Text style={{ color: '#1e2348' }}>
+                    {this.state.alreadyMuted ? 'Unmute' : 'Mute'}
+                  </Text>
+                </TouchableOpacity>
+              </View>)}
+
+          </View>
+
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center'}}>
             <View style={style.image}>
               <RoundImage
@@ -928,17 +1002,14 @@ class otherUserProfile extends Component {
             </Text>
           </View>
 
-         
-        </View>
 
-        <View style={{justifyContent: 'center', width: DEVICE_WIDTH}}>
-            <View style={[style.bannerBottom]}>
-              {this.state.loader ? (
+          <View style={{flexDirection: 'row', marginTop: 50, width: 120}}>
+            {this.state.loader ? (
                 <ActivityIndicator color="#18224f" />
               ) : (
                 !friendError && (
                   <TouchableOpacity
-                  style={{marginHorizontal: 20}}
+                  style={{marginHorizontal: 10}}
                     onPress={() => {
                       if (
                         !this.state.alreadyFriend &&
@@ -970,7 +1041,7 @@ class otherUserProfile extends Component {
                 )
               )}
               <TouchableOpacity
-               style={{marginRight: 20}}
+               style={{marginRight: 10}}
                 onPress={() => {
                   this.props.navigation.navigate('ChatStack', {
                     screen: 'SingleChat',
@@ -993,7 +1064,7 @@ class otherUserProfile extends Component {
               </TouchableOpacity>
 
               <TouchableOpacity 
-               style={{marginRight: 20, }}
+               style={{marginRight: 10, }}
             onPress={() => {
               this.setState({showModal: true});
             }}
@@ -1010,80 +1081,15 @@ class otherUserProfile extends Component {
             this.state.showModal ?
               this.renderModal() : null
           }
-
-              {!userInfo?.isProfilePrivate &&
-              (alreadyFollower || followAllowed) ? (
-                this.state.followLoader ? (
-                  <ActivityIndicator
-                    color="#18224f"
-                    style={{
-                      width: wp(20),
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      borderColor: '#1e2348',
-                      borderWidth: 1,
-                      borderRadius: 20,
-                      marginHorizontal: 10,
-                    }}
-                  />
-                ) : (
-                  !followError && (
-                    <TouchableOpacity
-                      style={{
-                        width: wp(20),
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        borderColor: '#1e2348',
-                        borderWidth: 1,
-                        borderRadius: 20,
-                        marginHorizontal: 10,
-                      }}
-                      onPress={() => {
-                        //     alert(item._id)
-                        if (!alreadyFollower) {
-                          this.onSendFollowRequest();
-                        } else {
-                          this.unFollow();
-                        }
-                        // this.setState({loader:true})
-                      }}>
-                      <Text style={{color: '#1e2348'}}>
-                        {alreadyFollower ? 'Unfollow' : 'Follow'}
-                      </Text>
-                    </TouchableOpacity>
-                  )
-
-                )
-              ) : null}
             </View>
-            { this.state.alreadyMuted &&
 
-            (<View style={{flexDirection: 'row',
-            marginBottom: 5,
-            marginRight: 20,
-            alignSelf: 'flex-end',
-            // marginTop: hp(2),
-          }}>
-            <TouchableOpacity
-                      style={{
-                        width: wp(20),
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        borderColor: '#1e2348',
-                        borderWidth: 1,
-                        borderRadius: 20,
-                        marginHorizontal: 10,
-                        padding:2
-                      }}
-                      onPress={() => {
-                          this.muteUser(userInfo.displayName);
-                      }}
-                      >
-                      <Text style={{color: '#1e2348'}}>
-                        {this.state.alreadyMuted ? 'Unmute': 'Mute'}
-                      </Text>
-                      </TouchableOpacity>
-            </View> )}
+        </View>
+
+        
+
+        <View style={{justifyContent: 'center', width: DEVICE_WIDTH, marginTop: 30}}>
+        <View style={{alignSelf: 'center', width: 300, height: 1,  backgroundColor: 'rgb(135, 135, 135)',marginTop: 10}}/>
+            
             {!userInfo?.isProfilePrivate && (
               <View style={{justifyContent: 'flex-end', flex: 1}}>
                 <ListItem
@@ -1381,7 +1387,6 @@ const style = StyleSheet.create({
   },
   banner: {width: wp(100), height: hp(30)},
   image: {
-    alignSelf: 'center',
     borderColor: '#1b224d',
     // borderWidth: 2,
   },
@@ -1429,11 +1434,10 @@ const style = StyleSheet.create({
   accountsCategory: {margin: 10},
   accountText: {fontSize: 12,marginTop: 4 },
   bannerBottom: {
-    flexDirection: 'row',
     marginBottom: 5,
-    marginRight: 20,
-    alignSelf: 'center',
-    marginTop: hp(6),
+    marginTop: 50,
+    alignItems: 'center',
+    width: 120
   },
   bannerIcon: {
     backgroundColor: '#1e2348',

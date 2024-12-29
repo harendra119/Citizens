@@ -616,7 +616,7 @@ useEffect(() => {
             color="#878585"
           />
           <Text style={styles.text1}>
-            {renderCount(followerCount || 0)} followers
+            {renderCount(followerCount || 0)} Torontonians
           </Text>
         </View>
         <View style={styles.row}>
@@ -630,11 +630,16 @@ useEffect(() => {
             {renderCount(likeCount || 0)} likes
           </Text>
         </View>
-        <View style={{flexDirection: 'row', alignItems: 'center', padding: 10}}>
+
+        <Text style={[{color: '#000', marginTop: 10}]}>
+        Community Guidelines
+          </Text>
+
+        <View style={{flexDirection: 'row', alignItems: 'center', paddingRight: 10}}>
           <Text
             numberOfLines={1}
-            style={[styles.text1, {flex: 1}]}>
-            {desc}
+            style={[styles.text1, {flex: 1, marginLeft: 0}]}>
+            {desc.replace(/\\n/g, '')}
           </Text>
           {
             desc &&  <TouchableOpacity

@@ -18,7 +18,7 @@ const AppModalView = (props) => {
         animationType='slide'
         transparent={true}
         visible={props.visible}>
-          <View style={{
+          <View style={[{
             backgroundColor: 'black',
             opacity: 0.7,
             position: 'absolute',
@@ -26,7 +26,7 @@ const AppModalView = (props) => {
             left: 0,
             height: DEVICE_HEIGHT,
             width: DEVICE_WIDTH
-          }} />
+          }, props.customStyle]} />
           <View  style= {props.style || { 
             flex: 1, 
             backgroundColor: 'transparent', 

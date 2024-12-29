@@ -38,6 +38,7 @@ const getPartOfList = ({ref, limitNum}) => {
         const tempArr = snap.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
+          docId: doc.id
         }));
         resolve({list: tempArr, lastDoc});
       })
@@ -47,4 +48,30 @@ const getPartOfList = ({ref, limitNum}) => {
   });
 };
 
-export {getLivePartOfList, getPartOfList};
+
+const getCommentOfList = ({ref, limitNum}) => {
+  return new Promise((resolve, reject) => {
+    ref
+      .get()
+      .then((snap) => {
+        let lastDoc;
+        if (snap.docs.length < limitNum) {
+          lastDoc = null;
+        } else {
+          lastDoc = snap.docs[snap.docs.length - 1];
+        }
+
+        const tempArr = snap.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          docId: doc.id
+        }));
+        resolve({list: tempArr, lastDoc});
+      })
+      .catch((err) => {
+        reject(err);
+      });
+  });
+};
+
+export {getLivePartOfList, getPartOfList, getCommentOfList};
