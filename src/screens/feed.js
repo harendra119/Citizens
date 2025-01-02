@@ -251,6 +251,7 @@ class Feed extends Component {
                 null
               }
                 <PostCard
+                carousel={true}
                   onRefresh={this.onRefresh}
                   data={item}
                   index={index}

@@ -13,23 +13,26 @@ import {
   Platform,
 } from 'react-native';
 import VideoPlayer from './videoPlayer/videoPlayer';
-import {Overlay, Header, Icon} from 'react-native-elements';
+import { Overlay, Header, Icon } from 'react-native-elements';
 // import GifImage from '@lowkey/react-native-gif'; // Harry did
 import AppIntroSlider from 'react-native-app-intro-slider';
 import {
   heightPercentageToDP,
   widthPercentageToDP,
 } from 'react-native-responsive-screen';
-import {scale, vScale} from '../configs/size';
+import { scale, vScale } from '../configs/size';
 import FastImage from 'react-native-fast-image';
-import { DataContext } from '../components/DataContext'
+import { DataContext } from './DataContext'
 import { DEVICE_WIDTH } from '../utils/Utility';
+import { PinchGestureHandler, State } from 'react-native-gesture-handler';
+import ImageZoom from 'react-native-image-pan-zoom';
+import AppModalView from './appModal/AppModalView';
 
-const {width, height} = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 
 export default class FbImages extends React.Component {
-  static contextType = DataContext 
+  static contextType = DataContext
   constructor(props) {
     super(props);
     this.flatListRef = React.createRef();
@@ -40,8 +43,10 @@ export default class FbImages extends React.Component {
       showOverlay: false,
       currentIndex: 0,
       intervalId: null,
+      scale: 1,
+      pinchImg: null
     };
-   
+
   }
 
 
@@ -51,37 +56,40 @@ export default class FbImages extends React.Component {
     }
   };
 
+
+
   renderImage = (source, aspectRatio, width) => {
-    
-    const {height: propHeight, color} = this.props;
-    // if(type=="video")
-    // {return(this.renderVieo(conditionalRender,source.type))}
-    
+
+    const { height: propHeight, color } = this.props;
+
     const relativeHeight =
       aspectRatio && width ? width / aspectRatio : vScale(180);
     const finalHeight = propHeight ? propHeight : relativeHeight;
-    
+
     return (
       <View>
-   
-      <FastImage
-        style={[
-          styles.image,
-          {
-            height: finalHeight,
-            width: width,
-            backgroundColor: 'white' ,
-          },
-        ]}
-        source={{uri: source}}
-        resizeMode={aspectRatio ? 'cover' : 'cover'}
-      />
+        <TouchableOpacity
+          onPress={() => this.setState({ pinchImg: { source, finalHeight, width } })}
+        >
+          <FastImage
+            style={[
+              styles.image,
+              {
+                height: finalHeight,
+                width: width,
+                backgroundColor: 'white',
+              },
+            ]}
+            source={{ uri: source }}
+            resizeMode={aspectRatio ? 'cover' : 'cover'}
+          />
+        </TouchableOpacity>
       </View>
     );
   };
-  
+
   renderGif = (source, check) => {
-    const {images} = this.state;
+    const { images } = this.state;
 
     // if(type=="video")
     // {return(this.renderVieo(conditionalRender,source.type))}
@@ -98,7 +106,7 @@ export default class FbImages extends React.Component {
     );
   };
   renderVideo = (source, aspectRatio, width, height) => {
-    const {width: propWidth, height: propHeight} = this.props;
+    const { width: propWidth, height: propHeight } = this.props;
 
     let finalWidth = propWidth ? propWidth : width;
 
@@ -109,7 +117,7 @@ export default class FbImages extends React.Component {
 
     return (
       <VideoPlayer
-        source={{uri: source}} // Can be a URL or a local file.
+        source={{ uri: source }} // Can be a URL or a local file.
         ref={(ref) => {
           this.player = ref;
         }}
@@ -136,12 +144,12 @@ export default class FbImages extends React.Component {
     );
   };
   renderOne() {
-    const {images} = this.state;
-    const {countFrom} = this.state;
+    const { images } = this.state;
+    const { countFrom } = this.state;
     let conditionalRender = undefined;
-    const {width: propWidth, height: propHeight} = this.props;
+    const { width: propWidth, height: propHeight } = this.props;
     let finalWidth = propWidth || widthPercentageToDP(95);
-  
+
     return (
       <View style={styles.row}>
         <TouchableOpacity
@@ -160,11 +168,11 @@ export default class FbImages extends React.Component {
     );
   }
   renderOneForrHome(item) {
-    console.log("gkgkkg",item)
-    const {images} = this.state;
-    const {countFrom} = this.state;
+    console.log("gkgkkg", item)
+    const { images } = this.state;
+    const { countFrom } = this.state;
     let conditionalRender = undefined;
-    const {width: propWidth, height: propHeight} = this.props;
+    const { width: propWidth, height: propHeight } = this.props;
     let finalWidth = DEVICE_WIDTH
     return (
       <View style={styles.row}>
@@ -201,7 +209,7 @@ export default class FbImages extends React.Component {
     );
   };
   renderAsset = (type, url, aspectRatio, width) => {
-   
+
     if (type == 'image' || type == 'gif') {
       return this.renderImage(url, aspectRatio, width);
     } else if (type == 'video') {
@@ -214,7 +222,7 @@ export default class FbImages extends React.Component {
   renderOverlayAsset = (item) => {
     return (
       <TouchableOpacity
-        style={[styles.imageContent1, {width: width}]}
+        style={[styles.imageContent1, { width: width }]}
         onPress={() => {
           this.clickEventListener();
         }}>
@@ -229,8 +237,8 @@ export default class FbImages extends React.Component {
   };
 
   renderTwo() {
-    const {images} = this.state;
-    const {countFrom} = this.state;
+    const { images } = this.state;
+    const { countFrom } = this.state;
     const conditionalRender =
       [3, 4].includes(images.length) ||
       (images.length > +countFrom && [3, 4].includes(+countFrom));
@@ -239,7 +247,7 @@ export default class FbImages extends React.Component {
       <View
         style={[
           styles.row,
-          {alignItems: 'center', backgroundColor: '#000000'},
+          { alignItems: 'center', backgroundColor: '#000000' },
         ]}>
         <TouchableOpacity
           style={[styles.imageContent, styles.imageContent2]}
@@ -271,12 +279,12 @@ export default class FbImages extends React.Component {
   }
 
   renderThree() {
-    const {images} = this.state;
-    const {countFrom} = this.state;
+    const { images } = this.state;
+    const { countFrom } = this.state;
     const overlay =
       !countFrom ||
-      countFrom > 5 ||
-      (images.length > countFrom && [4, 5].includes(+countFrom))
+        countFrom > 5 ||
+        (images.length > countFrom && [4, 5].includes(+countFrom))
         ? this.renderCountOverlay(true)
         : this.renderOverlay();
     const conditionalRender =
@@ -310,7 +318,7 @@ export default class FbImages extends React.Component {
   }
 
   renderOverlay() {
-    const {images} = this.state;
+    const { images } = this.state;
     return (
       <TouchableOpacity
         style={[styles.imageContent, styles.imageContent3]}
@@ -319,15 +327,15 @@ export default class FbImages extends React.Component {
         }}>
         <Image
           style={styles.image}
-          source={{uri: images[images.length - 1].url}}
+          source={{ uri: images[images.length - 1].url }}
         />
       </TouchableOpacity>
     );
   }
 
   renderCountOverlay(more) {
-    const {images} = this.state;
-    const {countFrom} = this.state;
+    const { images } = this.state;
+    const { countFrom } = this.state;
     const extra = images.length - (countFrom && countFrom > 5 ? 5 : countFrom);
     const conditionalRender =
       images.length == 4 || (images.length > +countFrom && +countFrom == 4);
@@ -339,7 +347,7 @@ export default class FbImages extends React.Component {
         }}>
         <Image
           style={styles.image}
-          source={{uri: conditionalRender ? images[3].url : images[4].url}}
+          source={{ uri: conditionalRender ? images[3].url : images[4].url }}
         />
         <View style={styles.overlayContent}>
           <View>
@@ -378,7 +386,7 @@ export default class FbImages extends React.Component {
       </View>
     );
   };
-  _renderItem = ({item}) => {
+  _renderItem = ({ item }) => {
     return (
       <View style={styles.slide}>
         {this.renderAsset(item.type, item.url, true)}
@@ -398,9 +406,9 @@ export default class FbImages extends React.Component {
   startAutoScroll = () => {
     const { images } = this.state;
     const imagesToShow = images;
-  
+
     if (imagesToShow.length === 0) return;
-  
+
     this.scrollInterval = setInterval(() => {
       const { currentIndex } = this.state;
       const nextIndex = currentIndex + 1;
@@ -419,10 +427,10 @@ export default class FbImages extends React.Component {
       }
     }, 5000);
   };
-  
-  
-  
-  
+
+
+
+
   stopAutoScroll = () => {
     if (this.state.intervalId) {
       clearInterval(this.state.intervalId);
@@ -432,42 +440,42 @@ export default class FbImages extends React.Component {
   onScrollEnd = (event) => {
     const currentIndex = Math.floor(event.nativeEvent.contentOffset.x / DEVICE_WIDTH);
     this.setState({ currentIndex });
-  
+
     this.stopAutoScroll();
     this.startAutoScroll();
   };
   render() {
-   
-    var {modal, index, countFrom} = this.state;
-    var {images} = this.state;
+
+    var { modal, index, countFrom } = this.state;
+    var { images } = this.state;
     var imagesToShow = images;
     if (countFrom && images.length > countFrom) {
       imagesToShow.length = countFrom;
     }
     const { isTrue } = this.context ?? createContext();
-// if (isTrue){
-// return(
-//   <View style={styles.container}>
-//        <FlatList
-//   ref={this.flatListRef}
-//   data={imagesToShow}
-//   renderItem={({ item }) => this.renderOneForrHome(item)}
-//   keyExtractor={(item, index) => index.toString()}
-//   horizontal
-//   pagingEnabled
-//   showsHorizontalScrollIndicator={false}
-//   initialScrollIndex={0}
-//   getItemLayout={(data, index) => ({
-//     length: DEVICE_WIDTH,
-//     offset: DEVICE_WIDTH * index,
-//     index,
-//   })}
-//   onScrollEndDrag={this.onScrollEnd}
-//   style={{ width: DEVICE_WIDTH, height: 200 }}
-// />
-//       </View> 
-// )
-// }else{
+    // if (isTrue){
+    // return(
+    //   <View style={styles.container}>
+    //        <FlatList
+    //   ref={this.flatListRef}
+    //   data={imagesToShow}
+    //   renderItem={({ item }) => this.renderOneForrHome(item)}
+    //   keyExtractor={(item, index) => index.toString()}
+    //   horizontal
+    //   pagingEnabled
+    //   showsHorizontalScrollIndicator={false}
+    //   initialScrollIndex={0}
+    //   getItemLayout={(data, index) => ({
+    //     length: DEVICE_WIDTH,
+    //     offset: DEVICE_WIDTH * index,
+    //     index,
+    //   })}
+    //   onScrollEndDrag={this.onScrollEnd}
+    //   style={{ width: DEVICE_WIDTH, height: 200 }}
+    // />
+    //       </View> 
+    // )
+    // }else{
     return (
       <View style={styles.container}>
         {[1, 3, 4].includes(imagesToShow.length) && this.renderOne()}
@@ -480,31 +488,68 @@ export default class FbImages extends React.Component {
           // onBackdropPress={this.toggleOverlay}
           fullScreen>
           <>
-          <Header
-            leftComponent={{
-              icon: 'arrow-back-ios',
-              type: 'material',
-              color: '#000',
-              onPress: () => {
-                this.toggleOverlay();
-              },
-            }}
-            containerStyle={{backgroundColor: 'transparent', marginTop: -10}}
-          />
-          <FlatList
-            style={{flex: 1}}
-            contentContainerStyle={{alignItems: 'center'}}
-            horizontal
-            data={this.state.images}
-            renderItem={({item}) => this.renderOverlayAsset(item)}
-            keyExtractor={(item, index) => index.toString()}
-          />
+            <Header
+              leftComponent={{
+                icon: 'arrow-back-ios',
+                type: 'material',
+                color: '#000',
+                onPress: () => {
+                  this.toggleOverlay();
+                },
+              }}
+              containerStyle={{ backgroundColor: 'transparent', marginTop: -10 }}
+            />
+            <FlatList
+              style={{ flex: 1 }}
+              contentContainerStyle={{ alignItems: 'center' }}
+              horizontal
+              data={this.state.images}
+              renderItem={({ item }) => this.renderOverlayAsset(item)}
+              keyExtractor={(item, index) => index.toString()}
+            />
           </>
         </Overlay>
+        {
+          this.state.pinchImg ?
+            <AppModalView
+              visible={true}
+              customStyle={{ opacity: 1.9 }}
+            >
+
+              <ImageZoom cropWidth={Dimensions.get('window').width}
+                cropHeight={Dimensions.get('window').height}
+                imageWidth={this.state.pinchImg.width}
+                imageHeight={this.state.pinchImg.finalHeight}>
+                <FastImage style={{ width: this.state.pinchImg.width, height: this.state.pinchImg.finalHeight }}
+                  source={{ uri: this.state.pinchImg.source }}
+                  resizeMode='contain'
+                />
+              </ImageZoom>
+              <TouchableOpacity
+                onPress={() => { this.setState({ pinchImg: null }) }}
+                style={{
+                  backgroundColor: 'white',
+                  height: 50,
+                  width: 50,
+                  position: 'absolute',
+                  top: 60, right: 30,
+                  borderRadius: 25,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+
+                }}>
+
+                <Text style={{ fontSize: 30, fontWeight: 'bold' }}>x</Text>
+
+              </TouchableOpacity>
+            </AppModalView>
+            :
+            null
+        }
       </View>
     );
   }
- // }
+  // }
 }
 
 const styles = StyleSheet.create({
@@ -561,7 +606,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontWeight: 'bold',
     textShadowColor: 'rgba(0, 0, 139, 1)',
-    textShadowOffset: {width: -1, height: 1},
+    textShadowOffset: { width: -1, height: 1 },
     textShadowRadius: 10,
   },
   buttonCircle: {
@@ -571,6 +616,9 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  imageWrapper: {
+    overflow: 'hidden',
   },
 });
 

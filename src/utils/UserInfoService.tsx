@@ -1,5 +1,5 @@
 
-const ADMIN_EMAILS = ['j.micah@live.com', 'gimtharendra1196@gmail.com']
+const ADMIN_EMAILS = ['j.micah@live.com', 'gimtharendra1196@gmail.com', 'support@citizens.social'];
 
 class UserInfoService {
   private userInfo: any = null;

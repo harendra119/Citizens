@@ -33,7 +33,6 @@ import UserInfoService from '../utils/UserInfoService';
 import { firebaseDbObject } from '../utils/FirebseDbObject';
 
 const SinglePost = ({ navigation, route }) => {
-  console.log('mohit', route.params?.postData);
 
   // return false;
   const id = route.params?.postData?.data?.id;
@@ -189,7 +188,7 @@ const SinglePost = ({ navigation, route }) => {
   }
 
   const deleteComment = (item) => {
-    Utility.showMessageWithActionCancel(() => {
+    Utility.showMessageWithActionCancel(async () => {
       try {
         firestore()
           .collection('Posts')
@@ -204,7 +203,26 @@ const SinglePost = ({ navigation, route }) => {
           .collection('Posts')
           .doc(id).update({
             totalComments: firestore.FieldValue.increment(-1)
-          })
+          });
+
+        const usersRef = firebaseDbObject.collection('Users');
+        const blockedUsersSnapshot = await usersRef
+          .where('BlockedComments', 'array-contains', item.docId)
+          .get();
+
+        // Step 3: Iterate over each user who has blocked the comment
+        const promises = blockedUsersSnapshot.docs.map(async (userDoc) => {
+          const userId = userDoc.id;
+          const blockedCommentRef = firebaseDbObject.collection('Users').doc(userId).collection('BlockedComments').doc(item.docId);
+
+          // Step 4: Remove the comment from this user's blocked comments list
+          await blockedCommentRef.delete();
+          console.log(`Comment ${item.docId} removed from blocked list of user ${userId}.`);
+        });
+
+        // Wait for all promises to resolve
+        await Promise.all(promises);
+
       } catch (error) {
         Alert.alert('Error', 'Failed to delete the comment. Please try again later.');
       }
@@ -252,7 +270,6 @@ const SinglePost = ({ navigation, route }) => {
 
       setInput('');
       setCommensq((prev) => [...prev, body]);
-      console.log('++++' + comments.length)
       batch.update(postRef, {
         activityCount: firestore.FieldValue.increment(1),
         totalComments: firestore.FieldValue.increment(1),
@@ -290,7 +307,6 @@ const SinglePost = ({ navigation, route }) => {
   };
 
   const renderComment = ({ item, index }) => {
-    console.log(item)
     const data = route.params?.postData
     const a = new firestore.Timestamp(
       item.createdAt.seconds,
@@ -450,7 +466,7 @@ const SinglePost = ({ navigation, route }) => {
   return (
     <View style={{ flex: 1 }}>
       <Header navigation={navigation} otherProfile={true} />
-      <View style={{ height: vScale(540) }}>
+      <View style={{ flex: 1 }}>
         <FlatList
           ListHeaderComponent={
             <PostCard
@@ -471,15 +487,13 @@ const SinglePost = ({ navigation, route }) => {
       </View>
       <View
         style={{
+          marginVertical: 30,
           flexDirection: 'row',
           alignItems: 'center',
           alignSelf: 'center',
           borderColor: '#1e2348',
           borderWidth: 1,
           borderRadius: mScale(15),
-          position: 'absolute',
-          bottom: Platform.OS == 'ios' ? vScale(15) + kHeight : vScale(15),
-          marginTop: vScale(130),
           paddingHorizontal: scale(10),
           backgroundColor: '#ffffff',
           height: vScale(40),

@@ -53,6 +53,7 @@ const AssetCarousel = ({content, focused, useMedia}) => {
       />
       <Pagination
         dotsLength={content.length}
+        
         activeDotIndex={activeIndex}
         containerStyle={{
           position: 'absolute',
@@ -62,20 +63,29 @@ const AssetCarousel = ({content, focused, useMedia}) => {
           justifyContent: 'center',
         }}
         dotStyle={{
-          width: 10,
-          height: 10,
-          borderRadius: 5,
-          marginHorizontal: 8,
-          backgroundColor: 'rgba(255, 255, 255, 0.92)',
-          borderWidth: 1,
+          width: 8,
+          height: 8,
+          borderRadius: 4,
+          backgroundColor: 'white',
+        }}
+        dotContainerStyle= {{
+          backgroundColor: 'rgb(0, 0, 0, 0.7)',
+          borderRadius: 10,
+          width: 12,
+          height: 12,
+
         }}
         inactiveDotStyle={
           {
-            // Define styles for inactive dots here
+           
+          width: 8,
+          height: 8,
+          borderRadius: 4,
+          backgroundColor: 'gray',
           }
         }
-        inactiveDotOpacity={0.4}
-        inactiveDotScale={0.6}
+        inactiveDotOpacity={0.9}
+        inactiveDotScale={1}
       />
     </>
   );
