@@ -204,10 +204,15 @@ const SingleChat = ({navigation, route}) => {
   };
 
   const deleteSelectedMessage = async () => {
+    if (chatArr.current.length == 1) {
+      deleteChat()
+      return;
+    }
     try {
       console.log('selectedMesssage', selectedMessage);
       console.log('length', chatArr.current.length - 1);
       if (selectedMessage.index == chatArr.current.length - 1) {
+       
         const lastMsgRef = database().ref(
           `chats/${userProfile.userId}/${friendId.userId}`,
         );
@@ -458,7 +463,7 @@ const SingleChat = ({navigation, route}) => {
       : true;
 
     let isFirstMessage =
-      item._id == chatArr.current[chatArr.current?.length - 1]._id;
+      item._id == chatArr.current[chatArr.current?.length - 1]?._id;
 
     if (Object.keys(item.deletedBy || {}).length > 0) {
       if (item.deletedBy[userProfile.userId] == true) {

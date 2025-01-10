@@ -45,12 +45,15 @@ theme.colors.secondaryContainer = "transperent"
       activeColor="#1c2143"
       initialRouteName="feed"
       tabBarOptions={{tabBarVisible: false}}
+      
       barStyle={{
+        
         backgroundColor: '#ffffff',
         borderTopWidth: 0.5,
         borderTopColor: '#808080',
         overflow: 'hidden',
-        height: TabBarHeight,
+        paddingBottom: 20,
+        height: 80
       }}>
       <Tab.Screen
         name="Home"
@@ -148,6 +151,7 @@ theme.colors.secondaryContainer = "transperent"
           },
         }}
         options={{
+          
           tabBarLabel: 'Home',
           tabBarVisible: false,
           tabBarIcon: ({color, focused}) => (
@@ -226,6 +230,7 @@ theme.colors.secondaryContainer = "transperent"
               options={{
                 tabBarLabel: 'Notifications',
                 tabBarVisible: false,
+              
                 tabBarIcon: ({color, focused}) => (
                   <Image
                       source={require('../assets/bell.png')} 

@@ -974,7 +974,7 @@ class PostCard extends Component {
         ) : (
           <View>
             {this.state.assets != undefined && this.state.assets.length > 0 ? (
-              carousel ? (
+              true ? (
                 <AssetCarousel
                   content={this.state.assets}
                   focused={this.props?.focused && this.state.playVideo}

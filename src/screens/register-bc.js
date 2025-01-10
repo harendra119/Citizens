@@ -466,7 +466,7 @@ ShowAlertWithDelay=()=>{
                 }}>
                 <Text style={{fontSize: 10, color: '#18224f'}}>
                   {' '}
-                  Over the age of 18
+                  Over the age of 16
                 </Text>
                 <Switch
                   trackColor={{false: '#767577', true: '#81b0ff'}}

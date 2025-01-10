@@ -250,7 +250,7 @@ class HeaderClass extends Component {
     );
 
     const Item = ({ title,id, index }) => (
-      <View style={{flex:1,flexDirection:'row',margin:5, alignItems: 'center'}}> 
+      <View style={{flex:1,flexDirection:'row', alignItems: 'center'}}> 
       {
         index == 0 ?
         <Text style={{marginRight: 10, fontWeight: 'bold'}}>Search for: </Text>
@@ -307,7 +307,7 @@ class HeaderClass extends Component {
           }
           centerComponent={
             !this.props.otherProfile && (
-              <View style={{marginRight: scale(10)}}>
+              <View style={{marginRight: scale(20)}}>
                 <TouchableOpacity
                 onPress={() => 
                 {
@@ -393,7 +393,7 @@ class HeaderClass extends Component {
                         </View>
                       }
                       rightComponent={
-                        <View style={{flexDirection: 'row'}}>
+                        <View style={{flexDirection: 'row', alignItems: 'center'}}>
                           <TouchableOpacity
                             onPress={() => {
                               // this.props.navigation.removeListener('beforeRemove')
@@ -469,7 +469,7 @@ class HeaderClass extends Component {
             )
           }
           rightComponent={
-            <View style={{flexDirection: 'row'}}>
+            <View style={{marginLeft: 10, marginTop: 8, flexDirection: 'row', alignItems: 'center', alignSelf: 'center'}}>
               <TouchableOpacity
                 onPress={() => {
                   // this.props.navigation.removeListener('beforeRemove')
@@ -478,13 +478,17 @@ class HeaderClass extends Component {
                   this.props.navigation.navigate('ChatStack', {
                     screen: 'ChatList',
                   });
-                }}>
+                }
+                
+                }
+                
+                >
                 <Icon
                   name="chat"
                   type="entypo"
                   color="#636363"
-                  size={Platform.OS == 'android' ? 20 : 22}
-                  style={{margin: 5}}
+                  size={Platform.OS == 'android' ? 30 : 30}
+                  style={{marginHorizontal: 5}}
                 />
               </TouchableOpacity>
               <TouchableOpacity
@@ -496,8 +500,8 @@ class HeaderClass extends Component {
                   name="menu"
                   type="entypo"
                   color="#636363"
-                  size={Platform.OS == 'android' ? 20 : 22}
-                  style={{margin: 5}}
+                  size={Platform.OS == 'android' ? 30 : 30}
+                  style={{marginHorizontal: 5}}
                 />
               </TouchableOpacity>
             </View>
@@ -505,6 +509,8 @@ class HeaderClass extends Component {
           containerStyle={{
             backgroundColor: 'transaprent',
             padding: 0,
+            justifyContent: 'center',
+            alignItems: 'center',
             marginTop: this.props.inHeader ? -10 : 0,
             marginRight: this.props.inHeader ? 10 : 0,
             marginBottom: Platform.OS == 'android' ? 0 : vScale(8),

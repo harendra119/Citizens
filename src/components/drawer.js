@@ -256,6 +256,7 @@ class HeaderClass extends Component {
               :
               null
           }
+          <View style={{height: 40}}/>
           <Header inHeader={true} navigation={this.props.navigation.current} />
           <Toast ref={this.toast} style={{zIndex: 9999}} />
 

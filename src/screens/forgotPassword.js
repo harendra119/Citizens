@@ -55,7 +55,7 @@ class login extends Component {
       <View style={style.container}>
         <ScrollView style={{height: hp(100), width: wp(100)}}>
           <ImageBackground
-            source={require('../assets/bg.png')}
+            source={require('../assets/bg_screen.gif')}
             resizeMode="cover"
             style={style.bgImage}
             imageStyle={{opacity: 0.3}}>
@@ -65,7 +65,7 @@ class login extends Component {
               onPress={() => {
                 this.props.navigation.goBack();
               }}
-              style={{alignSelf: 'flex-start'}}>
+              style={{paddingVertical: 25, alignSelf: 'flex-start'}}>
               <Image
                 source={require('../assets/backArrow.png')}
                 style={style.backArrow}
@@ -159,9 +159,9 @@ const style = StyleSheet.create({
   forgotText: {fontSize: 19, fontWeight: 'bold', marginTop: '10%'},
 
   backArrow: {
-    marginLeft: '7%',
+    marginLeft: '4%',
     width: 30.5,
-    height: 10,
+    height: 20,
     marginTop: '10%',
     alignSelf: 'flex-start',
   },

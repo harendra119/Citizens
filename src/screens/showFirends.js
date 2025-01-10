@@ -302,6 +302,7 @@ class HeaderClass extends Component {
                value={search}
              />
           <FlatList
+          showsVerticalScrollIndicator={false}
             data={this.state.filteredList}
             renderItem={this.renderItem}
             // ListHeaderComponent={renderCombinedHeader}

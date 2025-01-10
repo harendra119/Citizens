@@ -11,6 +11,7 @@ import {
   ScrollView,
   Alert,
   Platform,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import VideoPlayer from './videoPlayer/videoPlayer';
 import { Overlay, Header, Icon } from 'react-native-elements';
@@ -68,7 +69,7 @@ export default class FbImages extends React.Component {
 
     return (
       <View>
-        <TouchableOpacity
+        <TouchableWithoutFeedback
           onPress={() => this.setState({ pinchImg: { source, finalHeight, width } })}
         >
           <FastImage
@@ -83,7 +84,7 @@ export default class FbImages extends React.Component {
             source={{ uri: source }}
             resizeMode={aspectRatio ? 'cover' : 'cover'}
           />
-        </TouchableOpacity>
+        </TouchableWithoutFeedback>
       </View>
     );
   };

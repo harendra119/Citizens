@@ -379,7 +379,7 @@ console.log('Apple RES :: ' + JSON.stringify(appleAuthRequestResponse))
       <View style={style.container}>
         <ScrollView style={{height: hp(100)}}>
           <ImageBackground
-            source={require('../assets/bg.png')}
+            source={require('../assets/bg_screen.gif')}
             resizeMode="cover"
             style={style.bgImage}
             imageStyle={{opacity: 0.3}}>
@@ -396,7 +396,7 @@ console.log('Apple RES :: ' + JSON.stringify(appleAuthRequestResponse))
               />
               <TextInput
                 style={style.input}
-                placeholder="Enter email address"
+                placeholder="Email"
                 underlineColorAndroid="transparent"
                 value={email}
                 onChangeText={(email) => {
@@ -429,11 +429,10 @@ console.log('Apple RES :: ' + JSON.stringify(appleAuthRequestResponse))
                 onPress={() => {
                   this.setState({showPasword: !showPasword});
                 }}>
-                <Icon
-                  name={showPasword ? 'eye' : 'eye-with-line'}
-                  type="entypo"
-                  size={18}
-                />
+                <Text style={style.forgotContainergotText}>
+                  {showPasword ? 'Show' : 'Hide'}
+                </Text>
+               
               </TouchableOpacity>
             </View>
             <View style={style.forgotContainer}>
@@ -661,8 +660,8 @@ const style = StyleSheet.create({
     //  opacity:.3
   },
   logo: {
-    width: 150,
-    height: 150,
+    width: 80,
+    height: 80,
     marginTop: '20%'
   },
   text: {

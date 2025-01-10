@@ -635,53 +635,7 @@ class otherUserProfile extends Component {
       </View>
     );
   };
-  renderClipThumbnail = ({item, index}) => {
-    if (index % 3 != 0) return null;
-    return (
-      <View style={{flexDirection: 'row', marginBottom: '0.3%'}}>
-        {[0, 1, 2].map((i) => {
-          if (!this.state.userClips[index + i]) return null;
-          return (
-            <TouchableOpacity
-              style={{
-                ...style.clipThumbnail,
-                marginHorizontal: i == 1 ? '0.5%' : 0,
-              }}
-              onPress={() =>
-                this.setState({showClipList: true, initialIndex: index + i})
-              }>
-              <Image
-                source={{uri: this.state.userClips[index + i]?.thumbnailUri}}
-                style={{width: '100%', height: vScale(180)}}
-                resizeMode="cover"
-              />
-              <View  style={{
-              flexDirection: 'row', 
-              alignItems: 'center',
-              marginRight: 2,
-              paddingHorizontal: 10,
-              paddingVertical: 5,
-              alignSelf: 'flex-end', 
-              backgroundColor: '#1e2348',
-              borderRadius: 5,
-              marginTop: -32
-              }}>
-          
-                <Icon
-                      name='eye-outline'
-                      type="ionicon"
-                      size={18}
-                      color='white'
-                      
-                    />
-                  <Text style={{fontSize: 12, color: 'white', marginLeft: 5}}>{this.state.userClips[index + i]?.viewCount?this.state.userClips[index + i]?.viewCount:0}</Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-    );
-  };
+  
 
   fetchData = async (id) => {
 
@@ -1000,6 +954,92 @@ class otherUserProfile extends Component {
                 ? userInfo.username
                 : '@' + userInfo.displayName}
             </Text>
+
+            {!userInfo?.isProfilePrivate && (
+          <>
+            <ListItem containerStyle={[style.listCont, {marginTop: hp(1)}]}>
+              <ListItem.Content>
+                {userInfo.bio != null && userInfo.bio != 'null' && (
+                  <ListItem.Subtitle
+                    style={[
+                      style.nickName,
+                      {alignSelf: 'flex-start', marginLeft: wp(5)},
+                    ]}>
+                    {userInfo.bio}{' '}
+                  </ListItem.Subtitle>
+                )}
+              </ListItem.Content>
+            </ListItem>
+            <View style={style.row}>
+              {userInfo.occupation != null &&
+                userInfo.occupation != 'null' &&
+                userInfo.occupation != '' && (
+                  <View style={style.secondRow}>
+                    <Icon
+                      name="briefcase"
+                      type="entypo"
+                      color="gray"
+                      style={{margin: 5}}
+                      size={14}
+                    />
+                    <Text style={style.innerText}>{userInfo.occupation}</Text>
+                  </View>
+                )}
+              {userInfo.location != null &&
+                userInfo.location != 'null' &&
+                userInfo.location != '' && (
+                  <View style={style.secondRow}>
+                    <Icon
+                      name="location-on"
+                      type="material"
+                      color="gray"
+                      style={{}}
+                      size={14}
+                    />
+                    <Text style={style.innerText}>{userInfo.location}</Text>
+                  </View>
+                )}
+              {userInfo.birthdate != null &&
+                userInfo.birthdate != 'null' &&
+                userInfo.birthdate != '' && (
+                  <View style={style.secondRow}>
+                    <Icon
+                      name="cake"
+                      type="material-community"
+                      color="gray"
+                      style={{margin: 5}}
+                      size={14}
+                    />
+                    <Text style={style.innerText}>{userInfo.birthdate}</Text>
+                  </View>
+                )}
+            </View>
+            {
+userInfo.isEmailPublic?
+
+<View style={[style.row, {justifyContent: 'flex-start'}]}>
+              {userInfo.isEmailPublic && (
+                <View style={style.innerRow}>
+                  <Icon
+                    name="email"
+                    type="material"
+                    color="gray"
+                    style={{margin: 5}}
+                    size={14}
+                  />
+                  <Text style={style.innerText}>{userInfo.email}</Text>
+                </View>
+              )}
+            </View>
+            :
+            null
+            }
+            
+          </>
+        )}
+        {userInfo?.isProfilePrivate && (
+          <Text style={style.accountPrivate}>Account is Private</Text>
+        )}
           </View>
 
 
@@ -1120,86 +1160,9 @@ class otherUserProfile extends Component {
               </View>
             )}
           </View>
-        {!userInfo?.isProfilePrivate && (
-          <>
-            <ListItem containerStyle={[style.listCont, {marginTop: hp(1)}]}>
-              <ListItem.Content>
-                {userInfo.bio != null && userInfo.bio != 'null' && (
-                  <ListItem.Subtitle
-                    style={[
-                      style.nickName,
-                      {alignSelf: 'flex-start', marginLeft: wp(10)},
-                    ]}>
-                    {userInfo.bio}{' '}
-                  </ListItem.Subtitle>
-                )}
-              </ListItem.Content>
-            </ListItem>
-            <View style={style.row}>
-              {userInfo.occupation != null &&
-                userInfo.occupation != 'null' &&
-                userInfo.occupation != '' && (
-                  <View style={style.secondRow}>
-                    <Icon
-                      name="briefcase"
-                      type="entypo"
-                      color="gray"
-                      style={{margin: 5}}
-                      size={14}
-                    />
-                    <Text style={style.innerText}>{userInfo.occupation}</Text>
-                  </View>
-                )}
-              {userInfo.location != null &&
-                userInfo.location != 'null' &&
-                userInfo.location != '' && (
-                  <View style={style.secondRow}>
-                    <Icon
-                      name="location-on"
-                      type="material"
-                      color="gray"
-                      style={{margin: 5}}
-                      size={14}
-                    />
-                    <Text style={style.innerText}>{userInfo.location}</Text>
-                  </View>
-                )}
-              {userInfo.birthdate != null &&
-                userInfo.birthdate != 'null' &&
-                userInfo.birthdate != '' && (
-                  <View style={style.secondRow}>
-                    <Icon
-                      name="cake"
-                      type="material-community"
-                      color="gray"
-                      style={{margin: 5}}
-                      size={14}
-                    />
-                    <Text style={style.innerText}>{userInfo.birthdate}</Text>
-                  </View>
-                )}
-            </View>
-            <View style={[style.row, {justifyContent: 'flex-start'}]}>
-              {userInfo.isEmailPublic && (
-                <View style={style.innerRow}>
-                  <Icon
-                    name="email"
-                    type="material"
-                    color="gray"
-                    style={{margin: 5}}
-                    size={14}
-                  />
-                  <Text style={style.innerText}>{userInfo.email}</Text>
-                </View>
-              )}
-            </View>
-          </>
-        )}
-        {userInfo?.isProfilePrivate && (
-          <Text style={style.accountPrivate}>Account is Private</Text>
-        )}
+      
 
-        <ScrollView horizontal style={style.categoryContainer}>
+        <ScrollView horizontal style={style.categoryContainer} showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
           {accounts.map((item, index) => {
             return (
               <TouchableOpacity
@@ -1299,6 +1262,7 @@ class otherUserProfile extends Component {
                     if (item.name == 'Activity' || item.name == 'Scenes') { // george from clips to Scenes
                       return (
                         <FlatList
+                        showsVerticalScrollIndicator={false}
                           data={data}
                           renderItem={renderItem}
                           keyExtractor={keyExtractor}
@@ -1430,7 +1394,7 @@ const style = StyleSheet.create({
     marginTop: hp(2),
     alignItems: 'center',
   },
-  categoryContainer: {marginTop: hp(-1), alignSelf: 'center'},
+  categoryContainer: {marginTop: hp(1), alignSelf: 'center'},
   accountsCategory: {margin: 10},
   accountText: {fontSize: 12,marginTop: 4 },
   bannerBottom: {

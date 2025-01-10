@@ -213,7 +213,7 @@ class Register extends Component {
       <View style={style.container}>
         <ScrollView>
           <ImageBackground
-            source={require('../assets/bg.png')}
+            source={require('../assets/bg_screen.gif')}
             resizeMode="cover"
             style={style.bgImage}
             imageStyle={{opacity: 0.3}}>
@@ -221,10 +221,11 @@ class Register extends Component {
             <StatusBar translucent backgroundColor="transparent" />
 
             <TouchableOpacity
+
               onPress={() => {
                 this.props.navigation.goBack();
               }}
-              style={{alignSelf: 'flex-start'}}>
+              style={{paddingVertical: 25, alignSelf: 'flex-start'}}>
               <Image
                 source={require('../assets/backArrow.png')}
                 style={style.backArrow}
@@ -298,11 +299,10 @@ class Register extends Component {
                 onPress={() => {
                   this.setState({showPasword: !showPasword});
                 }}>
-                <Icon
-                  name={showPasword ? 'eye' : 'eye-with-line'}
-                  type="entypo"
-                  size={18}
-                />
+                  <Text style={style.forgotContainergotText}>
+                  {showPasword ? 'Show' : 'Hide'}
+                </Text>
+               
               </TouchableOpacity>
             </View>
             <View style={style.inputContainer}>
@@ -326,11 +326,9 @@ class Register extends Component {
                 onPress={() => {
                   this.setState({showConfirmPassword: !showConfirmPassword});
                 }}>
-                <Icon
-                  name={showConfirmPassword ? 'eye' : 'eye-with-line'}
-                  type="entypo"
-                  size={18}
-                />
+                <Text style={style.forgotContainergotText}>
+                  {showConfirmPassword ? 'Show' : 'Hide'}
+                </Text>
               </TouchableOpacity>
             </View>
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -369,14 +367,15 @@ class Register extends Component {
                 }}>
                 <Text style={{fontSize: 10, color: '#18224f'}}>
                   {' '}
-                  Over the age of 18
+                  Over the age of 16
                 </Text>
                 <Switch
-                  trackColor={{false: '#767577', true: '#81b0ff'}}
-                  thumbColor={ageCheck ? '#f5dd4b' : '#f4f3f4'}
+                  trackColor={{false: '#767577', true: '#1cff00'}}
+                  thumbColor={ageCheck ? '#fff' : '#fff'}
                   ios_backgroundColor="#3e3e3e"
                   onValueChange={this.toggleAge}
                   value={ageCheck}
+                
                 />
               </View>
             </View>
@@ -481,6 +480,10 @@ const style = StyleSheet.create({
   container: {
     flex: 1, // alignItems: 'center', justifyContent: 'center'
   },
+  forgotContainergotText: {
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
   bgImage: {
     flex: 1,
     resizeMode: 'contain',
@@ -490,9 +493,9 @@ const style = StyleSheet.create({
     //  opacity:.3
   },
   backArrow: {
-    marginLeft: '7%',
+    marginLeft: '4%',
     width: 30.5,
-    height: 10,
+    height: 20,
     marginTop: '10%',
     alignSelf: 'flex-start',
   },
