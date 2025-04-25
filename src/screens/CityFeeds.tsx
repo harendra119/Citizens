@@ -42,7 +42,7 @@ const EmptyListComponenet = () => (
         fontWeight: 'bold',
         lineHeight: vScale(28),
       }}>
-      No posts available under this category
+     No posts yet, share something.
     </Text>
    
   </View>
@@ -222,7 +222,7 @@ class CityFeeds extends Component {
         ) : (
           <FlatList
             data={this.state.postsFetched}
-            style={{backgroundColor: '#d9d9d9'}}
+            style={{backgroundColor: '#eef3f7'}}
             renderItem={({item, index}) => {
               return (
                 <>

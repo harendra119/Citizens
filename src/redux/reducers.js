@@ -37,6 +37,8 @@ const initailState = {
     {name: 'Friends', img: require('../assets/friends.png')},
     {name: 'Settings', img: require('../assets/settings.png')},
     {name: 'Feedback', img: require('../assets/settings.png')},
+    {name: 'Blocked List', img: require('../assets/block_user.png')},
+    {name: 'Onboarding', img: require('../assets/settings.png')},
     {name: 'Logout', img: require('../assets/logo.png')},
     {name: 'Delete Account', img: require('../assets/delete_acc.png')},
   ],

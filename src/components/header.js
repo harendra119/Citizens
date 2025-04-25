@@ -253,7 +253,7 @@ class HeaderClass extends Component {
       <View style={{flex:1,flexDirection:'row', alignItems: 'center'}}> 
       {
         index == 0 ?
-        <Text style={{marginRight: 10, fontWeight: 'bold'}}>Search for: </Text>
+        <Text style={{marginRight: 10, fontWeight: 'bold'}}></Text>
         :
         null
       }
@@ -280,7 +280,7 @@ class HeaderClass extends Component {
     return (
       
       <View>
-      <View style={{width: wp(100),marginTop:wp(5)}}>
+      <View style={{width: wp(100),marginTop:wp(5), justifyContent: 'center', alignItems: 'center'}}>
         <Header
           leftComponent={
             this.props.otherProfile ? (
@@ -296,7 +296,10 @@ class HeaderClass extends Component {
                 onPress={() => {
                   this.closeDrawerIfOpen();
                   this.props?.removeFocus && this.props.removeFocus();
-                  this.props.navigation.navigate('ProfileRoutes');
+                  if (!this.props.otherProfile) {
+                    this.props.navigation.navigate('profile');
+                  } else
+                    this.props.navigation.navigate('ProfileRoutes');
                 }}>
                 <RoundImage
                   imageUrl={this.props?.imageUrl}
@@ -307,14 +310,19 @@ class HeaderClass extends Component {
           }
           centerComponent={
             !this.props.otherProfile && (
-              <View style={{marginRight: scale(20)}}>
+              <View style={{
+                marginTop: 3,
+                justifyContent: 'center',
+                marginRight: scale(10)}}>
                 <TouchableOpacity
                 onPress={() => 
                 {
                   this.props.navigation.navigate('AppSearch');
                 }} 
+                style={{justifyContent: 'center', borderWidth: 0}}
                 >
                 <SearchBar
+                style={{borderWidth: 0, backgroundColor: 'tranparent'}}
                   ref={(component) => this._searchViewRef = component}
                   onFocus={() => this.setState({ isSearchOn: true })}
                   // onBlur={() => this.setState({isSearchOn: false})}
@@ -330,7 +338,7 @@ class HeaderClass extends Component {
                   }} //{this.props.addSearch}
                   lightTheme={true}
                   containerStyle={style.headerCont}
-                  inputStyle={{ fontSize: 12 }}
+                  inputStyle={{ fontSize: 12, borderWidth: 0}}
                   inputContainerStyle={style.headerINput}
                   value={this.props.search}
                 />
@@ -593,13 +601,17 @@ const style = StyleSheet.create({
   },
   headerCont: {
     width: wp(61),
-    backgroundColor: '#e8e8e8',
+    backgroundColor: 'transparent',
     elevation: 0,
     borderWidth: 0,
     padding: 0,
     borderRadius: 20,
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
   },
-  headerINput: {height: hp(5), borderRadius: 20, backgroundColor: '#e8e8e8'},
+  headerINput: {
+    borderWidth: 0,
+    marginLeft: -12, height: 35, borderRadius: 20, backgroundColor: '#eef3f7'},
   avatar: {
     height: hp(5),
     width: hp(5),

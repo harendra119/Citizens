@@ -43,6 +43,8 @@ const getPartOfList = ({ref, limitNum}) => {
         resolve({list: tempArr, lastDoc});
       })
       .catch((err) => {
+        console.log('eerIn')
+        console.log(err)
         reject(err);
       });
   });

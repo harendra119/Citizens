@@ -19,6 +19,8 @@ import Profile from '../screens/profile';
 import appSearch from '../screens/search/appSearch';
 import SeacrchPage from '../screens/searchPage';
 import SinglePost from '../screens/singlePost';
+import BlockedUserList from '../screens/blockedUsers/BlockedUserList';
+import Onboarding from '../screens/Onboarding/Onboarding';
 
 const Stack = createStackNavigator();
 
@@ -77,6 +79,20 @@ export default HomeStack = () => {
         <Stack.Screen
           name="friendsPage"
           component={FriendTab}
+          options={{
+            headerShown: false,
+          }}
+        />
+         <Stack.Screen
+          name="BlockedUserList"
+          component={BlockedUserList}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="OnboardingView"
+          component={Onboarding}
           options={{
             headerShown: false,
           }}

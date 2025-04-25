@@ -384,11 +384,12 @@ class EditProfile extends Component {
       input,
     } = this.state;
     return (
-      <ScrollView style={{flex: 1}} showsVerticalScrollIndicator={false}>
+      <ScrollView style={{flex: 1, 
+        backgroundColor: '#fff'}} showsVerticalScrollIndicator={false}>
         <View style={style.container}>
           <Overlay
             isVisible={showAutoComplelte}
-            overlayStyle={{width: wp(90), height: hp(50)}}
+            overlayStyle={{width: wp(90), height: hp(50), backgroundColor: '#fff'}}
             onBackdropPress={this.closeAutoCompletBox}>
             <GoogleAutoComplete
               apiKey={GOOGLE_MAPS_APIKEY}
@@ -590,6 +591,7 @@ class EditProfile extends Component {
               </ListItem>
               <ListItem containerStyle={style.listCont}>
                 <Input
+                multiline
                   placeholder="Bio "
                   leftIcon={{
                     type: 'material',
@@ -599,7 +601,7 @@ class EditProfile extends Component {
                   }}
                   label="Bio "
                   inputStyle={{fontSize: 14}}
-                  inputContainerStyle={style.inputCont}
+                  inputContainerStyle={[style.inputCont, {height: 120}]}
                   containerStyle={style.contStyle}
                   errorStyle={style.errorStyle}
                   value={about}
@@ -913,6 +915,7 @@ class EditProfile extends Component {
 const style = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
   },

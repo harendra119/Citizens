@@ -232,6 +232,8 @@ class HeaderClass extends Component {
             borderWidth: 0,
             borderBottomColor: '#fff',
             marginTop: 5,
+            borderTopWidth: 0,
+            borderBottomWidth: 0,
           }}
           onChangeText={(search) => {
             this.setState({search}, () => {
@@ -276,6 +278,8 @@ class HeaderClass extends Component {
                  borderWidth: 0,
                  borderBottomColor: '#fff',
                  marginTop: 5,
+                  borderTopWidth: 0,
+                  borderBottomWidth: 0,
                }}
                onChangeText={(search) => {
                  this.setState({search}, () => {

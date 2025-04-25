@@ -265,45 +265,7 @@ class HeaderClass extends Component {
   render() {
     const {search, userFirends, error, loader} = this.state;
     const {renderHeader} = this.props;
-    // const renderCombinedHeader = () => (
-    //   <>
-    //     {typeof renderHeader == 'function' ? renderHeader() : null}
-    //     <SearchBar
-    //       placeholder="Search"
-    //       containerStyle={{
-    //         backgroundColor: 'transparent',
-    //         borderTopColor: '#fff',
-    //         borderWidth: 0,
-    //         borderBottomColor: '#fff',
-    //         marginTop: 5,
-    //       }}
-    //       onChangeText={(search) => {
-    //         this.setState({search}, () => {
-    //             this.searchUser(search);
-    //         //   if (!search) {
-    //         //     this.setState({filteredList: [...this.state.userFirends]});
-    //         //   }
-    //         //   let tempArray = [];
-    //         //   this.state.userFirends.find((element) => {
-    //         //     const data = this.filterFollowerData(element.userData)[0];
-
-    //         //     if (
-    //         //       data.displayName.toLowerCase().indexOf(search.toLowerCase()) >
-    //         //       -1
-    //         //     ) {
-    //         //       tempArray.push(element);
-    //         //     }
-    //         //   });
-    //         //   console.log('tempArray', tempArray);
-    //         //   this.setState({
-    //         //     filteredList: tempArray,
-    //         //   });
-    //         });
-    //       }}
-    //       value={search}
-    //     />
-    //   </>
-    // );
+    
 
     return (
       <View style={{flex: 1}}>
@@ -321,6 +283,8 @@ class HeaderClass extends Component {
                  borderWidth: 0,
                  borderBottomColor: '#fff',
                  marginTop: 5,
+                 borderTopWidth: 0,
+                 borderBottomWidth: 0,
                }}
                onChangeText={(search) => {
                 this.setState({'search':search});

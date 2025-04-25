@@ -467,6 +467,7 @@ class UserRow extends Component {
         { 
           Utility.getSearchType()==2 && (
         <ListItem
+        key={item.userId}
           containerStyle={{margin: 0, padding: 5}}
           onPress={() => {
             console.log(disabled, '---');

@@ -187,8 +187,8 @@ class login extends Component {
   getMyClips = async () => {
     const clipsRef = firestore()
       .collection('Clips')
-      .where('userId', '==', this.props.userId);
-      // .orderBy('date', 'desc')
+      .where('userId', '==', this.props.userId)
+      .orderBy('date', 'desc')
       // .limit(9);
     try {
       const res = await getPartOfList({ref: clipsRef, limitNum: 9});
@@ -207,8 +207,8 @@ class login extends Component {
     }
     const clipsRef = firestore()
       .collection('Clips')
-      .where('userId', '==', this.props.userId);
-      // .orderBy('date', 'desc')
+      .where('userId', '==', this.props.userId)
+      .orderBy('date', 'desc')
       // .limit(9)
       // .startAfter(this.state.userClipsLastDoc);
     try {
@@ -227,23 +227,33 @@ class login extends Component {
   renderClipThumbnail = ({item, index}) => {
     if (index % 3 != 0) return null;
     return (
-      <View style={{flexDirection: 'row', marginBottom: '0.3%'}}>
+      <View style={{flexDirection: 'row', marginBottom: 5, backgroundColor: '#fff', paddingLeft: 2}}>
         {[0, 1, 2].map((i) => {
           if (!this.state.userClips[index + i]) return null;
           return (
+            <View style={{
+                         marginRight: 5,
+                         borderRadius: 10,
+                         height: vScale(180),backgroundColor: '#fff',
+                       }}>
             <TouchableOpacity
-              style={{
+               style={{
                 ...style.clipThumbnail,
-                marginHorizontal: i == 1 ? '0.5%' : 0,
+                marginHorizontal: i == 1 ? '10' : 0,
+                borderRadius: 10,
               }}
               onPress={() =>
                 this.setState({showClipList: true, initialIndex: index + i})
               }>
-              <Image
-                source={{uri: this.state.userClips[index + i]?.thumbnailUri}}
-                style={{width: '100%', height: vScale(180)}}
-                resizeMode="cover"
-              />
+                <Image
+                  source={{ uri: this.state.userClips[index + i]?.thumbnailUri }}
+                  style={{
+
+                    borderRadius: 10,
+                    width: (DEVICE_WIDTH / 3) - 5, height: vScale(180)
+                  }}
+                  resizeMode='stretch'
+                />
               <View  style={{
               flexDirection: 'row', 
               alignItems: 'center',
@@ -266,6 +276,7 @@ class login extends Component {
                   <Text style={{fontSize: 12, color: 'white', marginLeft: 5}}>{this.state.userClips[index + i]?.viewCount?this.state.userClips[index + i]?.viewCount:0}</Text>
               </View>
             </TouchableOpacity>
+            </View>
           );
         })}
       </View>
@@ -293,7 +304,7 @@ class login extends Component {
       userName,
     } = this.props;
     return (
-      <>
+      <SafeAreaView style={{flex: 1, backgroundColor: '#fff'}}>
         {this.props?.cover ? (
           <ImageBackground
             source={{
@@ -305,7 +316,7 @@ class login extends Component {
             
             }}></ImageBackground>
         ) : (
-          <View style={{...style.banner, backgroundColor: '#d9d9d9'}} />
+          <View style={{...style.banner, backgroundColor: '#fff', height: 100}} />
         )}
         <View style={{width: DEVICE_WIDTH, flexDirection: 'row', alignItems: 'flex-start', marginTop:  wp(-10)}}>
           <View style={{marginLeft: 50, flex: 1, alignItems: 'center', justifyContent: 'center'}}>
@@ -370,7 +381,7 @@ class login extends Component {
               <ListItem.Subtitle
                 style={[
                   style.nickName,
-                  {alignSelf: 'flex-start', marginLeft: wp(10)},
+                  {alignSelf: 'flex-start', marginLeft: wp(4)},
                 ]}>
                 {this.props.bio}{' '}
               </ListItem.Subtitle>
@@ -386,7 +397,7 @@ class login extends Component {
                   name="briefcase"
                   type="entypo"
                   color="gray"
-                  style={{margin: 5}}
+                  style={{}}
                   size={14}
                 />
                 <Text style={style.innerText}>{this.props.occupation}</Text>
@@ -468,14 +479,14 @@ class login extends Component {
                     item.selected ?
                     <Text style={style.accountText}>{item.name}</Text>
                     :
-                    null
+                    <Text style={[style.accountText, {color: 'transparent'}]}>{item.name}</Text>
                   }
                
               </TouchableOpacity>
             );
           })}
         </ScrollView>
-      </>
+      </SafeAreaView>
     );
   };
 
@@ -508,12 +519,12 @@ class login extends Component {
           data = [...Array(this.state.userClips.length).keys()];
           renderItem = this.renderClipThumbnail;
           keyExtractor = (item, index) => index.toString();
-          onEndReached = this.getMoreClips;
+         // onEndReached = this.getMoreClips;
         } else {
           data = [...Array(this.state.userClips.length).keys()];
           renderItem = this.renderClipThumbnail;
           keyExtractor = (item, index) => index.toString();
-          onEndReached = this.getMoreClips;
+         // onEndReached = this.getMoreClips;
         }
       }
     });
@@ -609,8 +620,9 @@ class login extends Component {
 const style = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff'
   },
-  banner: {width: "100%", height: 200},
+  banner: {width: "100%", height: 200, backgroundColor: '#fff'},
   image: {
     alignSelf: 'center',
     borderColor: '#1b224d',
@@ -644,7 +656,7 @@ const style = StyleSheet.create({
     marginTop: hp(2),
     alignItems: 'center',
   },
-  categoryContainer: {marginTop: hp(3), alignSelf: 'center'},
+  categoryContainer: {marginTop: hp(2), alignSelf: 'center',  backgroundColor: '#fff'},
   accountsCategory: {margin: 10},
   accountText: {fontSize: 12,marginTop: 4 },
   bannerBottom: {
@@ -681,7 +693,7 @@ const style = StyleSheet.create({
     borderColor: 'blue',
   },
   clipThumbnail: {
-    width: '33%',
+    width: '100%',
     height: vScale(180),
     borderBottomWidth: 1,
     borderColor: '#FFF',

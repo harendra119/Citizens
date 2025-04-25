@@ -85,6 +85,7 @@ const cities = [
 const CityList = ({ navigation }) => {
     const userProfile = useSelector((state) => state.user.userProfile);
     const [citiesFromFirebase, setCitiesFromFirebase] = useState([]);
+    const [isFollowingCity, setIsFollowingCity] = useState(null);
     
 
     useEffect(() => {
@@ -99,9 +100,13 @@ const CityList = ({ navigation }) => {
         const checkFollowedCity = async () => {
           const userDoc = await firebaseDbObject.collection('Users').doc(userProfile.userId).get();
           const followedCity = userDoc.data()?.followed_city;
-          
+          if (followedCity)
+          setIsFollowingCity(followedCity);
+        else {
+            setIsFollowingCity(false);
+        }
           if (followedCity) {
-            navigation.replace('ActivismDetails', { cityId: followedCity });
+            navigation.navigate('ActivismDetails', { cityId: followedCity });
           }
         };
     
@@ -119,13 +124,27 @@ const CityList = ({ navigation }) => {
           });
       };
 
+      const unfollowCity = async (cityId) => {
+        const cityRef = firebaseDbObject.collection('cities').doc(citiesFromFirebase[0].cityId);
+        await firebaseDbObject.collection('Users').doc(userProfile.userId).update({ followed_city: null });
+        await cityRef.update({
+          followers: firestore.FieldValue.increment(-1),  // Decrement like count
+        });
+      };
+
     const renderCity = ({ item, index }) => {
         return (
-            <View style={{
+            <TouchableOpacity style={{
                 backgroundColor: '#fff',
                 marginBottom: 20
 
-            }}>
+            }}
+            onPress={() => {
+                if (isFollowingCity) {
+                    navigation.navigate('ActivismDetails', { cityId: isFollowingCity });
+                }
+            }}
+            >
                 <Image
                     source={{ uri: item.img }}
                     resizeMode='stretch'
@@ -143,15 +162,25 @@ const CityList = ({ navigation }) => {
                     </Text>
                     {
                         index == 0 ?
+                        isFollowingCity != null ?
                         <TouchableOpacity 
                         onPress={() => {
-                            followCity(item.id)
+                            if (!isFollowingCity) {
+                                followCity(item.id)
+                                setIsFollowingCity(item.id)
+                            } else {
+                                unfollowCity(item.id)
+                                setIsFollowingCity(false)
+                            }
+                           
                         }}
                         style={{ borderRadius: 20, backgroundColor: '#1e2348', marginHorizontal: 50, height: 40, justifyContent: 'center', alignItems: 'center', marginTop: 10 }}>
                         <Text style={{ fontWeight: '500', color: '#fff' }}>
-                            JOIN
+                            {isFollowingCity ? 'LEAVE' : 'JOIN'}
                         </Text>
                     </TouchableOpacity>
+                    :
+                    null
                     :
                    
                     <Text
@@ -167,7 +196,7 @@ const CityList = ({ navigation }) => {
                 </View>
 
 
-            </View>
+            </TouchableOpacity>
         )
     }
 
@@ -175,7 +204,7 @@ const CityList = ({ navigation }) => {
         <View style={{ flex: 1, backgroundColor: '#fff' }}>
             <Header navigation={navigation} />
             <StatusBar backgroundColor={'#000000'} />
-            <View style={{flex: 1, backgroundColor: '#ccc', paddingTop: 10}}>
+            <View style={{flex: 1, backgroundColor: '#eef3f7', paddingTop: 10}}>
             <FlatList
                 data={cities}
                 renderItem={renderCity}

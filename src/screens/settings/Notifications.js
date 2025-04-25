@@ -220,6 +220,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: vScale(15),
     paddingRight: scale(80),
+    backgroundColor: '#fff'
   },
   text1: {
     fontWeight: 'bold',

@@ -126,7 +126,9 @@ const style = StyleSheet.create({
     accountText: { fontSize: 16, fontWeight: '600' },
     bannerBottom: { flexDirection: 'row', marginBottom: 5, marginRight: 20, alignSelf: 'flex-end', marginTop: hp(2) },
     bannerIcon: { backgroundColor: '#1e2348', padding: 3, borderRadius: 100, margin: 5 },
-    headerCont: { width: wp(61), backgroundColor: 'transparent', elevation: 0, borderWidth: 0, padding: 0 },
+    headerCont: { 
+        borderTopWidth: 0,
+        borderBottomWidth: 0, width: wp(61), backgroundColor: 'transparent', elevation: 0, borderWidth: 0, padding: 0 },
     headerINput: { height: hp(5), borderRadius: 20 },
 
 

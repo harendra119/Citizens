@@ -7,7 +7,7 @@
 
 import React, { useEffect } from 'react';
 import Route from './src/routes/landingRoutes';
-import {Alert, View, Text} from 'react-native';
+import {Alert, View, Text, LogBox} from 'react-native';
 import {Provider} from 'react-redux';
 import rootReducer from './src/redux/reducers';
 import Store from './src/redux/store';
@@ -21,6 +21,7 @@ import messaging from '@react-native-firebase/messaging';
 function App(): JSX.Element {
 
   useEffect(() => {
+    LogBox.ignoreAllLogs(true);
     messaging()
       .requestPermission()
       .then((authStatus) => console.log('notif permission', authStatus))
@@ -30,7 +31,7 @@ function App(): JSX.Element {
   return (
     <MenuProvider>
         <SafeAreaProvider>
-          <Provider store={Store}>
+          <Provider store={Store}x>
             <Route />
           </Provider>
           <NotificationController />

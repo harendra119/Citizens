@@ -155,7 +155,7 @@ const EditClip = ({navigation, route}) => {
           ]);
         } else {
           setIsEditing(false);
-          navigation.navigate('Play', {uri: videoUri, thumbnailUri});
+          navigation.navigate('Play', {uri: videoUri, thumbnailUri,  cityId: route.params?.cityId});
           throw Error('No audio file');
         }
       })
@@ -230,6 +230,7 @@ const EditClip = ({navigation, route}) => {
             uri: mergedVideoUri,
             songName: audioFile?.name ? audioFile.name.split('.mp3')[0] : '',
             thumbnailUri,
+            cityId: route.params?.cityId
           });
         } else if (ReturnCode.isCancel(returnCode)) {
           // CANCEL

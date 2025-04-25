@@ -26,6 +26,7 @@ import auth from '@react-native-firebase/auth';
 import {useSelector} from 'react-redux';
 import errorLog from '../../Constants/errorLog';
 import {checkFollowStatus, follow, unfollow} from '../../backend/friends';
+import { DEVICE_HEIGHT, DEVICE_WIDTH } from '../appModal/AppModalView';
 
 const Clip = (props) => {
   const [clip, setClip] = useState(props.clip);
@@ -41,8 +42,8 @@ const Clip = (props) => {
   const [followDocData, setFollowDocData] = useState();
   const [isFollowing, setIsFollowing] = useState(false);
   const [followLoader, setFollowLoader] = useState(false);
-
-  const [paused, setPaused] = useState(true);
+   const [loading, setLoading] = useState(true);
+  const [paused, setPaused] = useState(props.paused);
 
   const {bottom, top} = useSafeAreaInsets();
 
@@ -50,7 +51,7 @@ const Clip = (props) => {
 
   // useFocusEffect(
   //   useCallback(() => {
-  //     // setPaused(props.paused);
+  //      setPaused(props.paused);
   //     return () => {
   //       setPaused(true);
   //     };
@@ -59,7 +60,11 @@ const Clip = (props) => {
 
   useEffect(() => {
     getIsLiked();
-  }, []);
+  }, [clip.videoUri]);
+
+  useEffect(() => {
+    setPaused(props.paused);
+  }, [props.paused]);
 
   useEffect(() => {
     checkFollowStatus();
@@ -323,6 +328,10 @@ const Clip = (props) => {
             style={styles.video}
             onError={(e) => console.log(e)}
             resizeMode={'cover'}
+            onLoad={() => {
+              setTimeout(() => {
+              setLoading(false)
+            }, 5000);}} 
             repeat={true}
             paused={props?.paused || paused}
             poster={clip?.thumbnailUri || ''}
@@ -497,6 +506,25 @@ const Clip = (props) => {
           reportClip={props?.reportClip || null}
         />
       </Overlay>
+      {
+        loading ? 
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          height: DEVICE_HEIGHT,
+          width: DEVICE_WIDTH,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        <ActivityIndicator
+        size={'large'}
+        color={'red'}
+        />
+        </View>
+        :
+        null
+      }
     </View>
   );
 };
@@ -603,8 +631,8 @@ const styles = StyleSheet.create({
     fontSize: mScale(15),
   },
   commentsOverlay: {
-    height: vScale(467),
-    width: scale(375),
+    height: '80%',
+    width: DEVICE_WIDTH,
     bottom: 0,
     position: 'absolute',
     paddingHorizontal: scale(15),

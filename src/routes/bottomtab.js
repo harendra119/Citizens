@@ -18,6 +18,7 @@ import ClipsStack from '../screens/clips';
 import Notifications from '../screens/notifications';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from 'react-native-paper';
+import { DEVICE_WIDTH } from '../utils/Utility';
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -45,16 +46,15 @@ theme.colors.secondaryContainer = "transperent"
       activeColor="#1c2143"
       initialRouteName="feed"
       tabBarOptions={{tabBarVisible: false}}
-      
       barStyle={{
-        
         backgroundColor: '#ffffff',
         borderTopWidth: 0.5,
         borderTopColor: '#808080',
         overflow: 'hidden',
         paddingBottom: 20,
         height: 80
-      }}>
+      }}
+      >
       <Tab.Screen
         name="Home"
         component={Home}
@@ -152,19 +152,32 @@ theme.colors.secondaryContainer = "transperent"
         }}
         options={{
           
-          tabBarLabel: 'Home',
+          tabBarLabel: '',
           tabBarVisible: false,
           tabBarIcon: ({color, focused}) => (
+            <View style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: DEVICE_WIDTH / 5}}>
             <Image
               source={require('../assets/home.png')} 
               style = {{
                 width: vScale(20),
                 height: vScale(20),
                 tintColor: focused ? '#1c2143': '#aaa',
-                marginTop: vScale(-4),
 
               }}
             />
+            {
+              focused ?
+              <Text style={{color: '#1c2143', fontSize: 10, marginTop: 2}}>
+              Home
+                </Text>
+                :
+                null
+            }
+           
+            </View>
           ),
         }}
       />
@@ -172,19 +185,32 @@ theme.colors.secondaryContainer = "transperent"
         name="Explore"
         component={Trending}
         options={{
-          tabBarLabel: 'Explore',
+          tabBarLabel: '',
           tabBarVisible: false,
           tabBarIcon: ({color, focused}) => (
+            <View style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: DEVICE_WIDTH / 5}}>
             <Image
               source={require('../assets/explore.png')} 
               style = {{
                 width: vScale(20),
                 height: vScale(20),
                 tintColor: focused ? '#1c2143': '#aaa',
-                marginTop: vScale(-4),
 
               }}
             />
+            {
+              focused ?
+              <Text style={{color: '#1c2143', fontSize: 10, marginTop: 2}}>
+              Explore
+                </Text>
+                :
+                null
+            }
+           
+            </View>
           ),
         }}
       />
@@ -193,6 +219,7 @@ theme.colors.secondaryContainer = "transperent"
         name="CityList"
         screen="CityList"
         
+        
         listeners={{
           tabPress: (e) => {
          
@@ -200,19 +227,32 @@ theme.colors.secondaryContainer = "transperent"
         }}
         component={Activism}
         options={{
-          tabBarLabel: 'Cities',
+          tabBarLabel: '',
           tabBarVisible: false,
           tabBarIcon: ({color, focused}) => (
+            <View style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: DEVICE_WIDTH / 5}}>
             <Image
               source={require('../assets/toronto_icon_smaller.png')} 
               style = {{
                 width: vScale(20),
                 height: vScale(20),
                 tintColor: focused ? '#1c2143': '#aaa',
-                marginTop: vScale(-4),
 
               }}
             />
+            {
+              focused ?
+              <Text style={{color: '#1c2143', fontSize: 10, marginTop: 2}}>
+              Cities
+                </Text>
+                :
+                null
+            }
+           
+            </View>
           ),
         }}
       />
@@ -228,20 +268,33 @@ theme.colors.secondaryContainer = "transperent"
               }}
               component={Notifications}
               options={{
-                tabBarLabel: 'Notifications',
+                tabBarLabel: '',
                 tabBarVisible: false,
               
                 tabBarIcon: ({color, focused}) => (
+                  <View style={{
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    width: DEVICE_WIDTH / 5}}>
                   <Image
-                      source={require('../assets/bell.png')} 
-                      style = {{
-                        width: vScale(20),
-                        height: vScale(20),
-                        tintColor: focused ? '#1c2143': '#aaa',
-                        marginTop: vScale(-4),
-
-              }}
-            />
+                    source={require('../assets/bell.png')} 
+                    style = {{
+                      width: vScale(20),
+                      height: vScale(20),
+                      tintColor: focused ? '#1c2143': '#aaa',
+      
+                    }}
+                  />
+                  {
+                    focused ?
+                    <Text style={{color: '#1c2143', fontSize: 10, marginTop: 2}}>
+                    Notifications
+                      </Text>
+                      :
+                      null
+                  }
+                 
+                  </View>
                 ),
               }}
             />
@@ -257,18 +310,31 @@ theme.colors.secondaryContainer = "transperent"
         }}
         component={ClipsStack}
         options={{
-          tabBarLabel: 'Scenes',
+          tabBarLabel: '',
           tabBarIcon: ({color, focused}) => (
+            <View style={{
+              justifyContent: 'center',
+              alignItems: 'center',
+              width: DEVICE_WIDTH / 5}}>
             <Image
               source={require('../assets/scenes.png')} 
               style = {{
                 width: vScale(20),
                 height: vScale(20),
                 tintColor: focused ? '#1c2143': '#aaa',
-                marginTop: vScale(-4),
 
               }}
             />
+            {
+              focused ?
+              <Text style={{color: '#1c2143', fontSize: 10, marginTop: 2}}>
+              Scenes
+                </Text>
+                :
+                null
+            }
+           
+            </View>
           ),
         }}
       />

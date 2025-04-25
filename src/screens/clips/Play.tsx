@@ -8,7 +8,8 @@ import {
   ActivityIndicator,
   Image,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  KeyboardAvoidingView
 } from 'react-native';
 import {Icon} from 'react-native-elements';
 import Video from 'react-native-video';
@@ -53,7 +54,17 @@ const Play = ({navigation, route}) => {
     });
   };
 
+  const postOnCity = async () => {
+    const userDoc = await firestore().collection('Users').doc(user?.userId).get();
+    const followedCity = userDoc.data()?.followed_city;
+    navigation.navigate('ActivismDetails', {
+     cityId: followedCity
+    });
+  } 
+
+
   const postClip = async () => {
+    
     try {
       setShowSongInput(false);
       setIsUploading(true);
@@ -84,9 +95,13 @@ const Play = ({navigation, route}) => {
         isShared: false,
         type: 'Clips',
         isHidden: false,
+        cityId: route.params?.cityId || ''
       };
       await firestore().collection('Clips').add(payLoad);
-      navigation.navigate('ClipList');
+      if (route.params?.cityId) {
+        postOnCity();
+      } else 
+        navigation.navigate('ClipList');
     } catch (err) {
       console.log('err', err);
       setIsUploading(false);
@@ -94,6 +109,10 @@ const Play = ({navigation, route}) => {
   };
 
   return (
+     <KeyboardAvoidingView
+        style={{flex: 1}}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
     <TouchableWithoutFeedback
     style={styles.container}
     onPress={() => Keyboard.dismiss()}
@@ -189,16 +208,11 @@ const Play = ({navigation, route}) => {
               editable={!isUploading}
             />
           </View>
-          {/* <Icon
-            type="ionicon"
-            name="pencil-outline"
-            size={mScale(18)}
-            color="#FFF"
-          /> */}
         </View>
       </View>
     </View>
     </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 };
 

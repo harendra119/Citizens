@@ -761,6 +761,7 @@ class UploadPost extends Component {
               !this.props.route.params?.cityId ?
               <View style={[style.usernameWrapper, {flexDirection: 'row', alignItems: 'center'}]}>
             <ModalDropdown
+            saveScrollPosition={false}
               options={['Public', 'Friends']}
               dropdownStyle={{
                 width: wp(20),
@@ -770,13 +771,11 @@ class UploadPost extends Component {
               ref={this.privacy}
               defaultValue={this.state.privacy}
               style={{
-                // height: 20,
                 width: 100,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
               textStyle={{
-                // marginTop: vScale(20),
                 marginLeft: scale(15),
                 color: 'gray',
                 width: '70%',
@@ -952,7 +951,7 @@ class UploadPost extends Component {
                 renderItem={(item) => {
                   return (
                     <PostAsstes
-                  content={this.props.route.params?.assets.slice(0, 1)}
+                  content={this.props.route.params?.assets}
                   width={wp(30)}
                   height={hp(15)}
                   color={true}

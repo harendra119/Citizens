@@ -9,6 +9,8 @@ import CreateEvent from './CreateEvent';
 import EventDetails from './EventDetails';
 import CityList from '../cities/CityList';
 import CityDetails from '../cities/CityDetails';
+import ClipListCity from '../clips/ClipListCity';
+import TwitterAlerts from '../twiitterAlerts/TwitterAlerts';
 
 const Stack = createStackNavigator();
 
@@ -19,10 +21,12 @@ const Activism = () => {
       <Stack.Screen name="ActivismMain" component={ActivismMain} />
       <Stack.Screen name="ActivismDetails" component={ActivismDetails} />
       <Stack.Screen name="CityDetails" component={CityDetails} />
+      <Stack.Screen name="TwitterAlerts" component={TwitterAlerts} />
       <Stack.Screen name="CreateActivism" component={CreateActivism} />
       <Stack.Screen name="CreateEvent" component={CreateEvent} />
       <Stack.Screen name="Followers" component={Followers} />
       <Stack.Screen name="EventDetails" component={EventDetails} />
+       <Stack.Screen name="ClipListCity" component={ClipListCity} />
     </Stack.Navigator>
   );
 };

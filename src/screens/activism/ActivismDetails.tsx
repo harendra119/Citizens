@@ -6,6 +6,7 @@ import {
   Linking,
   Modal,
   Platform,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
@@ -30,7 +31,7 @@ import PostCard from '../../components/postCard';
 import { mScale, scale, vScale } from '../../configs/size';
 import { tStyle } from '../../configs/textStyle';
 import ErrorLog, { defaultAlert } from '../../Constants/errorLog';
-import Utility from '../../utils/Utility';
+import Utility, { DEVICE_HEIGHT, DEVICE_WIDTH } from '../../utils/Utility';
 import { WebView } from 'react-native-webview';
 import { firebaseDbObject } from '../../utils/FirebseDbObject';
 import UserInfoService from '../../utils/UserInfoService';
@@ -38,6 +39,7 @@ import { DataProvider } from '../../components/DataContext';
 import Feed from '../feed';
 import CityFeeds from '../CityFeeds';
 import { CITIES_TABS, LIFE_TAB_SUB_CATEGORIES, TODAY_TAB_SUB_CATEGORIES } from '../cities/CityConstants';
+import CityService from './CityService';
 
 const NumPosts = 100;
 
@@ -94,6 +96,7 @@ const ActivismDetails = ({navigation, route}) => {
   const db = firebaseDbObject;
 
   const { cityId } = route.params;
+  console.log(cityId)
 
   const [checkedTab,setCheckedTab] = useState(1);
   const [city, setCity] = useState({});
@@ -103,6 +106,9 @@ const ActivismDetails = ({navigation, route}) => {
   const [followerCount, setFollowerCount] = useState(0);
   const [posts, setPosts] = useState([]);
   const [subcategory, setSubcategory] = useState(1);
+  
+    const [clips, setClips] = useState([]);
+
 
   useEffect(() => {
     const fetchCityDetails = async () => {
@@ -110,7 +116,10 @@ const ActivismDetails = ({navigation, route}) => {
       setCity(cityDoc.data());
     };
     fetchCityDetails();
+    fetchCityClips();
   }, [cityId]);
+
+
 
 
   useEffect(() => {
@@ -133,6 +142,20 @@ const ActivismDetails = ({navigation, route}) => {
 
     checkIfLiked();
   }, [cityId, currentUserId]);
+
+  const fetchCityClips = () => {
+    CityService.getClips(cityId, (clips) => {
+      setClips(clips)
+    })
+  }
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchCityClips()
+    });
+    // Return the function to unsubscribe from the event so it gets removed on unmount
+    return unsubscribe;
+  }, [navigation]);
 
 
   const unfollowCity = async () => {
@@ -234,9 +257,16 @@ useEffect(() => {
     <View style={{flex:1,marginHorizontal:10}}> 
         <TouchableOpacity
         style={[checkedTab==id ? styles.selectedTab : styles.unSelectedTab]}
-        onPress={()=> {setSubcategory(1); setCheckedTab(id)} }
+        onPress={()=> {
+          setSubcategory(1); 
+          if (id == 4) {
+            setCheckedTab(id)
+           // navigation.navigate('TwitterAlerts')
+          } else
+            setCheckedTab(id)
+        } }
         >
-        <Text style={{color:'#fff'}}>{title}</Text>
+        <Text style={{color: checkedTab==id  ? '#fff' : 'black'}}>{title}</Text>
         </TouchableOpacity>
      </View>
     
@@ -245,12 +275,12 @@ useEffect(() => {
   const SubItem = ({ title,image,id }) => {
    
    return (
-    <View style={{flex:1,margin:10}}> 
+    <View style={{flex:1,margin:10, marginHorizontal: 2}}> 
         <TouchableOpacity
         style={[subcategory == id ? styles.selectedTab : styles.unSelectedTab]}
         onPress={ ()=>{handleSubCategoryPressed(id)} }
         >
-        <Text style={{color:'#fff'}}>{title}</Text>
+        <Text style={{color: subcategory == id ? '#fff' : '#000'}}>{title}</Text>
         </TouchableOpacity>
      </View>
     
@@ -558,12 +588,71 @@ useEffect(() => {
 
   const renderPageHeader = () => (
     <>
-    
-        <Image
-          source={{uri: 'https://drive.google.com/uc?export=view&id=1uMRRxuXkj1arzJCMkj-wuMw5yFZiGZOm'}}
-          style={{height: vScale(165), width: '100%'}}
+      <View style={{ flexDirection: 'row' }}>
+        {
+          clips && clips.length ?
+          <ScrollView horizontal>
+             
+            {
+              clips.map((clip) => {
+                return  <View style={{
+                  borderRadius: 10,
+                  height: vScale(180), backgroundColor: '#fff',
+                }}>
+                
+                <TouchableOpacity
+              
+                onPress={() => {navigation.navigate('ClipListCity',{cityId})}}
+                >
+                <Image
+                  source={{ uri: clip.thumbnailUri }}
+                  style={{ 
+                    borderRadius: 10,
+                    height: vScale(180), width: DEVICE_WIDTH / 3, marginRight: 6 }}
+                />
+                </TouchableOpacity>
+                </View>
+              })
+            }
+
+              <TouchableOpacity
+                onPress={() => navigation.navigate('NewClip', { cityId: cityId })}
+                style={{
+                  flex: 1,
+                  width: 100,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                <Image
+                  source={require('../../assets/plus.png')}
+                  style={{ height: 50, width: 50 }}
+                />
+              </TouchableOpacity>
+
+          </ScrollView>
+          :
+          <>
+          <Image
+          source={{ uri: 'https://drive.google.com/uc?export=view&id=1uMRRxuXkj1arzJCMkj-wuMw5yFZiGZOm' }}
+          style={{ height: vScale(165), width: '50%' }}
         />
-     
+        <TouchableOpacity 
+        onPress={() => navigation.navigate('NewClip', {cityId: cityId})}
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <Image
+            source={require('../../assets/plus.png')}
+            style={{ height: 50, width: 50 }}
+          />
+        </TouchableOpacity>
+          </>
+        }
+        
+      </View>
+
       <View style={styles.profileWrapper}>
         <View style={styles.movementsLogo}>
             <Image
@@ -731,6 +820,7 @@ useEffect(() => {
 
  
     return (
+      <SafeAreaView style={{flex: 1}}>
       <View style={styles.container}>
         {(checkedTab == 1 ||  checkedTab == 2) ? 
         
@@ -754,8 +844,18 @@ useEffect(() => {
         
 
       {(checkedTab == 3 &&
+      <>
+       <TouchableOpacity
+       style={{paddingHorizontal: 10}}
+       onPress={() => {setSubcategory(1); setCheckedTab(1)}}
+       >
+          <Image
+          style={{width: 40, height: 30}}
+          source={require('../../assets/backArrow.png')}
+          />
+        </TouchableOpacity>
       <ScrollView style={{}}>
-        {renderPageHeader()}
+       
         <Card
         containerStyle={{
           marginHorizontal: scale(8),
@@ -781,11 +881,72 @@ useEffect(() => {
         </Card>
         
       </ScrollView>
+      </>
+          
+        
+        )}
+
+{(checkedTab == 4 &&
+      <>
+      <View style={{flexDirection: 'row', paddingTop: 10}}>
+       <TouchableOpacity
+       style={{paddingHorizontal: 10}}
+       onPress={() => {setSubcategory(1); setCheckedTab(1)}}
+       >
+          <Image
+          style={{width: 40, height: 30}}
+          source={require('../../assets/backArrow.png')}
+          />
+        </TouchableOpacity>
+        <View style={{flex: 1, marginRight: 40}}>
+        <TouchableOpacity
+       style={{paddingHorizontal: 10, alignSelf: 'flex-end'}}
+       onPress={() => {
+        Utility.showMessage("Please login with your X account to get the latest updates. Please ignore if you already logged-in")
+       }}
+       >
+          <Image
+          style={{width: 40, height: 40}}
+          source={require('../../assets/warning.png')}
+          />
+        </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView style={{}}>
+       
+        <Card
+        containerStyle={{
+          marginHorizontal: scale(8),
+          elevation: 1,
+          borderRadius: mScale(8),
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 1,
+          },
+          shadowOpacity: 0.18,
+          shadowRadius: 1.0,
+          paddingTop: vScale(10),
+          paddingHorizontal: 0,
+          paddingBottom: 0,
+        }}
+        >
+          <WebView
+                  style={{height: DEVICE_HEIGHT}}
+                  source={{ uri: 'https://x.com/TTCnotices' }}
+                />
+
+        </Card>
+        
+      </ScrollView>
+      </>
           
         
         )}
       
       </View>
+      </SafeAreaView>
     );
 };
 
@@ -895,17 +1056,17 @@ const styles = StyleSheet.create({
   },
   selectedTab:{
     backgroundColor:'#1e2348',
-    paddingHorizontal:20,
+    paddingHorizontal:10,
     height:30,
     justifyContent:'center',
-    borderRadius:25
+    borderRadius:10
 },
 unSelectedTab:{
-    backgroundColor:'gray',
-    paddingHorizontal:20,
+    backgroundColor:'lightgray',
+    paddingHorizontal:10,
     height:30,
     justifyContent:'center',
-    borderRadius:25
+    borderRadius:10
 },
   profilePic: {
     height: vScale(23),

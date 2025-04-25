@@ -190,6 +190,7 @@ const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
     paddingBottom: vScale(15),
+    backgroundColor: '#fff'
   },
   text1: {
     fontSize: mScale(18),

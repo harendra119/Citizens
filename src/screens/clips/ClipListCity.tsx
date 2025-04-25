@@ -23,7 +23,7 @@ import {tStyle} from '../../configs/textStyle';
 
 const LimitNum = 10;
 
-const ClipList = ({navigation}) => {
+const ClipListCity = ({navigation, route}) => {
   const {bottom, top} = useSafeAreaInsets();
   const [currendInd, setCurrentInd] = useState(0);
   const [clips, setClips] = useState([]);
@@ -31,7 +31,7 @@ const ClipList = ({navigation}) => {
   const [error, setError] = useState(false);
   const [lastDoc, setLastDoc] = useState();
   const [refreshing, setRefreshing] = useState(false);
-
+  const { cityId } = route?.params;
   const bottomHeight =
     Platform.OS == 'ios'
       ? bottom + TabBarHeight + vScale(10)
@@ -58,10 +58,10 @@ const ClipList = ({navigation}) => {
     try {
       setRefreshing(true);
       const _2daysago = Date.now() - (2 * 24 * 60 * 60 * 1000);
-      console.log(_2daysago);
       const ref = firestore()
         .collection('Clips')
         .where('isHidden', '==', false)
+        .where('cityId', '==', cityId)
         .where('date','>=',_2daysago)
         .orderBy('date', 'desc')
         .orderBy('activityCount', 'desc')
@@ -110,20 +110,22 @@ const ClipList = ({navigation}) => {
   };
 
   const _onViewableItemsChanged = useRef(({viewableItems, changed}) => {
-    console.log('viewableItems', viewableItems);
-    console.log('changed', changed);
+    //console.log('viewableItems', viewableItems);
+   // console.log('changed', changed);
     if (viewableItems.length > 0) {
+      console.log('viewableItems' + viewableItems[0]?.index)
       setCurrentInd(viewableItems[0]?.index);
     }
   });
 
   const viewConfigRef = React.useRef({viewAreaCoveragePercentThreshold: 50});
 
-  const renderClip = ({item, index}) => (
-    <Clip
+  const renderClip = ({item, index}) => {
+    console.log('index != currendInd' +  index + '  ' + currendInd)
+    return <Clip
+    cityOne={true}
       paused={
         index != currendInd
-        // false
       }
       clip={item}
       bottomHeight={bottomHeight}
@@ -137,7 +139,8 @@ const ClipList = ({navigation}) => {
       }}
       reportClip={() => reportClip(item?.id)}
     />
-  );
+
+  }
 
   const reportClip = (id) => {
     try {
@@ -207,12 +210,9 @@ const ClipList = ({navigation}) => {
           return `${item.id}-${index}`;
         }}
         getItemLayout={(data, index) => {
+         
           const ITEM_HEIGHT = Dimensions.get('window').height - bottomHeight;
-          // console.log({
-          //   length: ITEM_HEIGHT,
-          //   offset: ITEM_HEIGHT * index,
-          //   index,
-          // });
+        
           return {length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index, index};
         }}
         // viewabilityConfig={{
@@ -228,4 +228,4 @@ const ClipList = ({navigation}) => {
   );
 };
 
-export default ClipList;
+export default ClipListCity;

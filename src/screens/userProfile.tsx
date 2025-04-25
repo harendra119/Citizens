@@ -449,9 +449,9 @@ class otherUserProfile extends Component {
     let users = await firestore().collection("Users").doc(uid).get()
     let userData = users.data();
     let blockedUsers = userData.blockedUserByMe || []
-    if (blockedUsers.includes(this.state.userId)){
-      this.props.navigation.navigate('Home', { refresh: true })
-    }
+    // if (blockedUsers.includes(this.state.userId) && !this.props?.route?.params?.fromBlockList){
+    //   this.props.navigation.navigate('Home', { refresh: true })
+    // }
     console.log("djjdj",blockedUsers)
     const ref = firestore()
       .collection('Posts')
@@ -518,8 +518,8 @@ class otherUserProfile extends Component {
   getUserClips = async (id) => {
     const clipsRef = firestore()
       .collection('Clips')
-      .where('userId', '==', id);
-      // .orderBy('date', 'desc')
+      .where('userId', '==', id)
+       .orderBy('date', 'desc');
       // .orderBy('activityCount', 'desc')
       // .limit(9);
     try {
@@ -541,8 +541,8 @@ class otherUserProfile extends Component {
     }
     const clipsRef = firestore()
       .collection('Clips')
-      .where('userId', '==', this.state.userId);
-      // .orderBy('date', 'desc')
+      .where('userId', '==', this.state.userId)
+       .orderBy('date', 'desc')
       // .limit(9)
       // .startAfter(this.state.userClipsLastDoc);
     try {
@@ -585,26 +585,33 @@ class otherUserProfile extends Component {
   renderClipThumbnail = ({item, index}) => {
     if (index % 3 != 0) return null;
     return (
-      <View style={{flexDirection: 'row', marginBottom: 50}}>
+      <View style={{flexDirection: 'row', marginBottom: 5, backgroundColor: '#fff', paddingLeft: 2}}>
         {[0, 1, 2].map((i) => {
               console.log('clp',this.state.userClips[index + i]);
 
           if (!this.state.userClips[index + i]) return null;
           return (
-            <View style={{width: '100%',height: vScale(180),backgroundColor: '#FFF',
+            <View style={{
+              marginRight: 5,
+              borderRadius: 10,
+              height: vScale(180),backgroundColor: '#fff',
             }}>
             <TouchableOpacity
               style={{
                 ...style.clipThumbnail,
-                marginHorizontal: i == 1 ? '0.5%' : 0,
+                marginHorizontal: i == 1 ? '10' : 0,
+                borderRadius: 10,
               }}
               onPress={() =>
                 this.updateclipView(index + i,this.state.userClips[index + i]?.id)
               }>
               <Image
                 source={{uri: this.state.userClips[index + i]?.thumbnailUri}}
-                style={{width: '100%', height: vScale(180)}}
-                resizeMode="cover"
+                style={{
+                  
+              borderRadius: 10,
+                  width: (DEVICE_WIDTH / 3) - 5, height: vScale(180)}}
+                resizeMode='stretch'
               />
               <View  style={{
               flexDirection: 'row', 
@@ -808,7 +815,7 @@ class otherUserProfile extends Component {
 
     const followAllowed = userInfo?.generalSettings?.follow;
     return (
-      <>   
+      <SafeAreaView style={{flex: 1}}>   
         {userInfo?.coverUrl ? (
           <ImageBackground
             source={{
@@ -817,7 +824,7 @@ class otherUserProfile extends Component {
                   ? userInfo.coverUrl
                   : 'https://images.ctfassets.net/hrltx12pl8hq/7yQR5uJhwEkRfjwMFJ7bUK/dc52a0913e8ff8b5c276177890eb0129/offset_comp_772626-opt.jpg?fit=fill&w=800&h=300',
             }}
-            resizeMode="stretch"
+            resizeMode="cover"
             style={style.banner}
           >
             <View style={{
@@ -1189,14 +1196,14 @@ userInfo.isEmailPublic?
                     item.selected ?
                     <Text style={style.accountText}>{item.name}</Text>
                     :
-                    null
+                    <Text style={[style.accountText, {color: 'transparent'}]}>{item.name}</Text>
                   }
                
               </TouchableOpacity>
             );
           })}
         </ScrollView>
-      </>
+      </SafeAreaView>
     );
   };
 
@@ -1229,14 +1236,16 @@ userInfo.isEmailPublic?
           data = [...Array(this.state.userClips.length).keys()];
           renderItem = this.renderClipThumbnail;
           keyExtractor = (item, index) => index.toString();
-          onEndReached = this.getMoreClips;
+         // onEndReached = this.getMoreClips;
         } else {
           data = [...Array(this.state.userClips.length).keys()];
           renderItem = this.renderClipThumbnail;
           keyExtractor = (item, index) => index.toString();
-          onEndReached = this.getMoreClips;
+         // onEndReached = this.getMoreClips;
         }
       }
+      console.log('FUUL SCENE VIDEOS LENGTH')
+      console.log(JSON.stringify(data))
       if (userInfo?.isProfilePrivate) {
         data = [];
         UserId = '11';
@@ -1348,8 +1357,9 @@ userInfo.isEmailPublic?
 const style = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff'
   },
-  banner: {width: wp(100), height: hp(30)},
+  banner: {width: '100%', height: 200},
   image: {
     borderColor: '#1b224d',
     // borderWidth: 2,
@@ -1418,7 +1428,7 @@ const style = StyleSheet.create({
   },
   headerINput: {height: hp(5), borderRadius: 20},
   clipThumbnail: {
-    width: '33%',
+    width: '100%',
     height: vScale(180),
     borderBottomWidth: 1,
     borderColor: '#FFF',

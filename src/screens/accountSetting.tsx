@@ -134,6 +134,7 @@ const style = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: wp(5),
+    backgroundColor: '#fff'
   },
   bgImage: {
     height: hp(100),

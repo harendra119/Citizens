@@ -13,6 +13,11 @@ export const  CITIES_TABS = [
       title: 'Events',
       
     },
+    {
+      id: 4,
+      title: 'Alerts',
+      
+    },
   ];
  export const  LIFE_TAB_SUB_CATEGORIES = [
     {
@@ -65,63 +70,63 @@ export const  CITIES_TABS = [
     },
     {
       id: 2,
-      title: 'Business',
-      
-    },
-    {
-      id: 3,
-      title: 'Politics',
-      
-    },
-    {
-      id: 4,
-      title: 'Technology',
-      
-    },
-    {
-      id: 5,
-      title: 'Games',
-      
-    },
-    {
-      id: 6,
-      title: 'Science',
-      
-    },
-    {
-      id: 7,
-      title: 'Health+Fitness',
-      
-    },
-    {
-      id: 8,
-      title: 'Style+Beauty',
-      
-    },
-    {
-      id: 9,
-      title: 'Shopping',
-      
-    },
-    {
-      id: 10,
-      title: 'Sports',
-      
-    },
-    {
-      id: 11,
-      title: ' Lifestyle+Entertainment',
-      
-    },
-    {
-      id: 12,
       title: 'Questions',
       
     },
     {
-      id: 13,
+      id: 3,
+      title: 'Business + Deals',
+      
+    },
+    {
+      id: 4,
       title: 'News',
       
     },
+    {
+      id: 5,
+      title: 'Discussions',
+      
+    },
+    // {
+    //   id: 6,
+    //   title: 'Science',
+      
+    // },
+    // {
+    //   id: 7,
+    //   title: 'Health+Fitness',
+      
+    // },
+    // {
+    //   id: 8,
+    //   title: 'Style+Beauty',
+      
+    // },
+    // {
+    //   id: 9,
+    //   title: 'Shopping',
+      
+    // },
+    // {
+    //   id: 10,
+    //   title: 'Sports',
+      
+    // },
+    // {
+    //   id: 11,
+    //   title: ' Lifestyle+Entertainment',
+      
+    // },
+    // {
+    //   id: 12,
+    //   title: 'Questions',
+      
+    // },
+    // {
+    //   id: 13,
+    //   title: 'News',
+      
+    // },
     
   ];

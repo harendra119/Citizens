@@ -81,6 +81,8 @@ class HeaderClass extends Component {
     if (name == 'Events') iconName = 'calendar-outline';
     if (name == 'Logout') iconName = 'log-out-outline';
     if (name == 'Delete Account') iconName = 'trash';
+    if (name == 'Blocked List') iconName = 'ban-outline';
+    if (name == 'Onboarding') iconName = 'telescope-sharp';
     if (name == 'Feedback') iconName = 'star';
     if (name == 'Clear Cache') iconName = 'nuclear-outline';
 
@@ -299,6 +301,22 @@ class HeaderClass extends Component {
                         'Are you sure?',
                         'Delete Account'
                       )
+                    }
+                    else if (item.name == 'Blocked List') {
+                      this.props.chnageDrawerItem(0);
+                      this.props.toggoleDrawer();
+                      this.props.navigation.current.removeListener(
+                        'beforeRemove',
+                      );
+                      this.props.navigation.current.navigate('BlockedUserList')
+                    }
+                    else if (item.name == 'Onboarding') {
+                      this.props.chnageDrawerItem(0);
+                      this.props.toggoleDrawer();
+                      this.props.navigation.current.removeListener(
+                        'beforeRemove',
+                      );
+                      this.props.navigation.current.navigate('OnboardingView')
                     }
                     else if (item.name == 'Feedback') {
                       this.setState({ showFeedback: true });

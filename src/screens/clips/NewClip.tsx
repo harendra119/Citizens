@@ -17,6 +17,13 @@ import {useFocusEffect, useIsFocused} from '@react-navigation/native';
 import DocumentPicker from 'react-native-document-picker';
 
 import {vScale, scale, mScale} from '../../configs/size';
+import { launchImageLibrary } from 'react-native-image-picker';
+
+const optionVideos = {
+  mediaType: 'video',
+  videoQuality: 'high',
+  durationLimit: 60,
+};
 
 const NewClip = ({navigation, route}) => {
   const [cameraPermission, setCameraPermission] = useState(false);
@@ -30,12 +37,6 @@ const NewClip = ({navigation, route}) => {
   const timeoutRef = useRef(null);
   const intervalRef = useRef(null);
 
-  console.log('permissions', cameraPermission, audioPermission);
-
-  const optionVideos = {
-    mediaType: 'video',
-    videoQuality: 'high',
-  };
 
   useEffect(() => {
     if (isFocused) {
@@ -96,7 +97,7 @@ const NewClip = ({navigation, route}) => {
       fileType: 'mp4',
       onRecordingFinished: (video) => {
         setIsRecording(false);
-        navigation.navigate('EditClip', {videoFile: video});
+        navigation.navigate('EditClip', {videoFile: video, cityId: route.params?.cityId});
       },
       onRecordingError: (error) => console.error(error),
     });
@@ -110,18 +111,35 @@ const NewClip = ({navigation, route}) => {
   };
 
   const videoPicker = async () => {
+
     try {
-      const response = await DocumentPicker.pick({
-        type: [DocumentPicker.types.video],
-        allowMultiSelection: false,
-        copyTo: 'cachesDirectory',
-      });
-      if (response[0]?.uri) {
-        const videoFile = {
-          path: response[0]?.fileCopyUri,
-        };
-        navigation.navigate('EditClip', {videoFile});
-      }
+
+      launchImageLibrary(optionVideos, (response) => {
+            if (response.didCancel) {
+            } else if (response.error) {
+            } else if (response.customButton) {
+              //console.log('User tapped custom button: ', response.customButton);
+            } else {
+              if (response && response.assets && response.assets.length) {
+                const videoFile = {
+                  path: response.assets[0].uri,
+                };
+                navigation.navigate('EditClip', {videoFile, cityId: route.params?.cityId});
+              }
+            }
+          });
+
+      // const response = await DocumentPicker.pick({
+      //   type: [DocumentPicker.types.video],
+      //   allowMultiSelection: false,
+      //   copyTo: 'cachesDirectory',
+      // });
+      // if (response[0]?.uri) {
+      //   const videoFile = {
+      //     path: response[0]?.fileCopyUri,
+      //   };
+      //   navigation.navigate('EditClip', {videoFile});
+      // }
     } catch (err) {
       console.log('err', err);
     }

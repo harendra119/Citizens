@@ -3,15 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
-  Image,
-  ImageBackground,
-  TextInput,
   StatusBar,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-  Platform,
-  KeyboardAvoidingView,
   FlatList,
 } from 'react-native';
 
@@ -55,14 +47,15 @@ const EmptyListComponenet = (props) => (
     </Text>
     <Text
       style={{
-        fontSize: mScale(14),
-        color: '#d9d9d9',
-        fontWeight: 'bold',
+        fontSize: mScale(16),
+        lineHeight: 20,
+        color: '#black',
         marginTop: vScale(8),
-        width: scale(260),
+       marginHorizontal: 15,
+        textAlign: 'center'
       }}>
-      This is the best spot to keep up with what's going on in the world. Now is
-      the time to find some people and things to follow.
+      This is the best spot to keep up with what's going on.
+      Now is the time to join your favourite city and find people to have fun with.
     </Text>
   </View>
 );
@@ -93,58 +86,72 @@ class Feed extends Component {
   postRef = database().ref('/posts');
 
   getPosts = async () => {
-
-    const {uid} = auth().currentUser;
-    console.log('userId',uid)
-    var  firstBatch = this.formatFollowingArray().slice(0, 9);
+    const { uid } = auth().currentUser;
+    console.log('userId', uid);
+  
     let mutedUser = [];
-    let users = await firestore().collection("Users").doc(uid).get()
+    let users = await firestore().collection("Users").doc(uid).get();
     let userData = users.data();
-    let blockedUsers = userData.blockedUserByMe || []
+    let blockedUsers = userData.blockedUserByMe || [];
+  
     const muteRef = await firestore().collection("Users").doc(uid).collection("Mutes").get();
-     muteRef.forEach(doc => {
-      mutedUser.push(doc.id);
-      firstBatch = firstBatch.filter(function(item) {
-          return item !== doc.id
-      })
+    muteRef.forEach(doc => mutedUser.push(doc.id));
+  
+    // 🔹 Get Friend IDs
+    const friendSnapshot = await firestore()
+      .collection("Friends")
+      .where("users", "array-contains", uid)
+      .where("areFriends", "==", true)
+      .get();
+  
+    const friendIds = friendSnapshot.docs.map(doc => {
+      const users = doc.data().users;
+      return users.find(user => user !== uid);
     });
-    
-
+  
+    const userIdsToFetch = [uid, ...friendIds];
+  
     this.unsub = firestore()
-      .collection('Posts')
-      .where('user', 'in', [uid, ...firstBatch])
-      .where('isHidden', '==', false)
-      .orderBy('date', 'desc')
+      .collection("Posts")
+      .where("user", "in", userIdsToFetch)
+      .where("isHidden", "==", false)
+      .orderBy("date", "desc")
       .limit(50)
       .onSnapshot(
         (snap) => {
           let lastDoc = null;
-          if (snap.docs.length == 20) {
+          if (snap.docs.length === 50) {
             lastDoc = snap.docs[snap.docs.length - 1];
           }
-
-          const tempArr = snap.docs.map((doc) => ({
+  
+          const tempArr = snap.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
           }));
-
+  
           const isBlockedByUser = (item, uid) => {
-            return item.blockedByUsers?.some(blockedUser => blockedUser.userId === uid);
+            return item.blockedByUsers?.some(b => b.userId === uid);
           };
-          const unmutedData = tempArr.filter((item) => {
-            // Check if item is muted or blocked
-            if (item.isShared && item.adminData && mutedUser.includes(item.adminData.id)) {
-              return false; // Skip muted items
-            } else if (isBlockedByUser(item, uid) || blockedUsers.includes(item.user)) {
-              return false; // Skip blocked items
+  
+          const unmutedData = tempArr.filter(item => {
+            const isPrivate = item.access === 'friends_notHidden';
+            const isPublic = item.access === 'public_notHidden';
+            const isFriend = friendIds.includes(item.user);
+  
+            if (isPrivate && !isFriend && item.user !== uid) return false; // Not friend, hide private
+            if (isPublic || isPrivate || item.user === uid) {
+              if (item.isShared && item.adminData && mutedUser.includes(item.adminData.id)) return false;
+              if (isBlockedByUser(item, uid) || blockedUsers.includes(item.user)) return false;
+              return true;
             }
-            return true; // Include unmuted and unblocked items
+            return false;
           });
+  
           if (this.props?.searchText) {
-            console.log('unmutedDAtais')
-            console.log(unmutedData)
             this.setState({
-              postsFetched: unmutedData.filter((itm) => itm.urlReadmore?.toLowerCase().includes(this.props.searchText?.toLowerCase())),
+              postsFetched: unmutedData.filter(itm =>
+                itm.urlReadmore?.toLowerCase().includes(this.props.searchText?.toLowerCase())
+              ),
               lastDoc: lastDoc,
               loader: false,
               err: false,
@@ -157,7 +164,6 @@ class Feed extends Component {
               err: false,
             });
           }
-          
         },
         (err) => {
           this.setState({
@@ -165,10 +171,10 @@ class Feed extends Component {
             err: true,
           });
           console.log('error while getting posts', err);
-         // alert('Something went wrong! Please try again later.');
-        },
+        }
       );
   };
+  
    addFieldsToExistingPosts = async () => {
     try {
       const snapshot = await firestore().collection('Users').get();
@@ -254,7 +260,7 @@ class Feed extends Component {
             showsVerticalScrollIndicator={false}
             data={this.state.postsFetched}
             // data={[]}
-            style={{backgroundColor: '#d9d9d9'}}
+            style={{backgroundColor: '#eef3f7'}}
             renderItem={({item, index}) => {
               return (
                 <>

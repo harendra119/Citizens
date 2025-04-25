@@ -755,7 +755,14 @@ class PostCard extends Component {
     
 
     return (
-      
+      <TouchableOpacity
+      onPress={() => {
+        this.props.navigation.navigate('SinglePost', {
+          postData: item,
+          userId:this.props.userId
+        });
+      }}
+      >
       <Card
         containerStyle={{
           marginHorizontal: scale(1),
@@ -773,6 +780,17 @@ class PostCard extends Component {
             padding: 0,
             paddingBottom: vScale(8),
           }}>
+            <TouchableOpacity
+            onPress={() => {
+              if (isAdmin) {
+                
+              } else if (this.props.userId === creatorId) {
+                this.props.navigation.navigate('profile');
+              } else
+                this.props.navigation.navigate('otherProfile', {
+                  userId: creatorId,
+                });
+            }}>
           {
           isAdmin ?
           <RoundImage
@@ -789,6 +807,7 @@ class PostCard extends Component {
             size={50}
           />
         }
+        </TouchableOpacity>
 
           <ListItem.Content style={{margin: 0, padding: 0}}>
             <TouchableOpacity
@@ -1136,7 +1155,6 @@ class PostCard extends Component {
             <TouchableOpacity
               style={style.cardFooterInner}
               onPress={() => {
-                
                 this.setState({playVideo: false});
                 this.props.navigation.navigate('SinglePost', {
                   postData: item,
@@ -1185,6 +1203,7 @@ class PostCard extends Component {
         </View>
        
       </Card>
+      </TouchableOpacity>
     );
   }
 }

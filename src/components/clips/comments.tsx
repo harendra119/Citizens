@@ -1,57 +1,48 @@
-import firestore from '@react-native-firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import moment from 'moment';
+import React, {useEffect, useState} from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Image,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
+  View,
   Text,
-  TextInput,
+  FlatList,
   TouchableOpacity,
-  View
+  StyleSheet,
+  Platform,
+  TextInput,
+  KeyboardAvoidingView,
+  ScrollView,
 } from 'react-native';
-
-import moment, { normalizeUnits } from 'moment';
-import { Icon } from 'react-native-elements';
-import { useSelector } from 'react-redux';
-import errorLog, { defaultAlert } from '../Constants/errorLog';
-import { getPartOfList } from '../backend/paginatedList';
-import Header from '../components/header';
-import PostCard from '../components/postCard';
-import { mScale, scale, vScale } from '../configs/size';
-import { renderInitials } from './activism/ActivismDetails';
+import {Icon} from 'react-native-elements';
+import {mScale, scale, vScale} from '../../configs/size';
+import EmptyListLoader from '../emptyListLoader';
+import EmptyListText from '../emptyListText';
+import RoundImage from '../roundImage';
+import firestore from '@react-native-firebase/firestore';
+import errorLog, {defaultAlert} from '../../Constants/errorLog';
+import {useSelector} from 'react-redux';
+import { Keyboard } from 'react-native';
+import UserInfoService from '../../utils/UserInfoService';
+import Utility from '../../utils/Utility';
+import AppModalView, { DEVICE_WIDTH } from '../appModal/AppModalView';
 import {
   heightPercentageToDP as hp,
   widthPercentageToDP as wp,
 } from 'react-native-responsive-screen';
-import { Item } from 'react-native-paper/lib/typescript/components/Drawer/Drawer';
-import Utility, { DEVICE_WIDTH } from '../utils/Utility';
-import AppModalView from '../components/appModal/AppModalView';
-import UserInfoService from '../utils/UserInfoService';
-import { firebaseDbObject } from '../utils/FirebseDbObject';
-import { addReply } from '../components/commentsReplies/Reply';
-import RoundImage from '../components/roundImage';
-import AppLoader from '../components/AppLoader';
+import { addClipReply } from '../commentsReplies/Reply';
+import AppLoader from '../AppLoader';
 
-const SinglePost = ({ navigation, route }) => {
+const ClipComments = ({clipId, bottom, incrementCommentCount, navigation}) => {
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [input, setInput] = useState();
+    const [lastDoc, setLastDoc] = useState();
 
-  // return false;
-  const id = route.params?.postData?.data?.id;
-  const [comments, setComments] = useState<any[]>([]);
-  const [commensq, setCommensq] = useState<any[]>([]);
-  const [lastDoc, setLastDoc] = useState();
-  const [input, setInput] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editableComment, setEditableComment] = useState<any>(null);
   const [replyingTo, setReplyingTo] = useState(null);  // Track which comment/reply is being replied to
   const [replyText, setReplyText] = useState("");  // Store reply text
   const [replyingToMap, setReplyingToMap] = useState({});
   const [replyTextMap, setReplyTextMap] = useState({});
-  const userProfile = useSelector((state) => state.user.userProfile);
   const [editableReply, setEditableReply] = useState(null);
   const [loader, setLoader] = useState(true);
   const [replyAndParentId, setReplyAndparentId] = useState(null);
@@ -60,85 +51,90 @@ const SinglePost = ({ navigation, route }) => {
   const [addNewComment, setAddNewComment] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   
-  
 
-  useEffect(() => {
-    if (commnetItem) {
-      setShowCommentModal(true)
-    } else {
-      setShowCommentModal(false)
-    }
-  },[commnetItem])
+  const userProfile = useSelector((state) => state.user.userProfile);
 
   
   useEffect(() => {
-    const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
-      setKeyboardOpen(true);
-    });
-    const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
-      setKeyboardOpen(false);
-    });
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
+      if (commnetItem) {
+        setShowCommentModal(true)
+      } else {
+        setShowCommentModal(false)
+      }
+    },[commnetItem])
+  
+    
+    useEffect(() => {
+      const showSubscription = Keyboard.addListener("keyboardDidShow", () => {
+        setKeyboardOpen(true);
+      });
+      const hideSubscription = Keyboard.addListener("keyboardDidHide", () => {
+        setKeyboardOpen(false);
+      });
+  
+      return () => {
+        showSubscription.remove();
+        hideSubscription.remove();
+      };
+    }, []);
+  
+    
+  
+  useEffect(() => {
+    getComments();
   }, []);
-
-  
 
   const getComments = async () => {
     setLoader(true);
     try {
-      const commentsRef = firestore()
-        .collection('Posts')
-        .doc(id)
+      const commentsRef = await firestore()
+        .collection('Clips')
+        .doc(clipId)
         .collection('Comments')
         .orderBy('createdAt', 'desc')
         .limit(40);
-
-      const commentsSnapshot = await commentsRef.get();
-      setLastDoc(commentsSnapshot.docs[commentsSnapshot.docs.length - 1]);
-      const blockedCommentsRef = firestore()
-        .collection('Users')
-        .doc(UserInfoService.getUserId())
-        .collection('BlockedComments');
-
-      const blockedCommentsSnapshot = await blockedCommentsRef.get();
-      const blockedCommentIds = new Set(
-        blockedCommentsSnapshot.docs.map((doc) => doc.id)
-      );
-
-      const commentsWithReplies = await Promise.all(
-        commentsSnapshot.docs.map(async (doc) => {
-          if (blockedCommentIds.has(doc.id)) return null;
-
-          const replies = await fetchRepliesRecursively(id, doc.id);
-
-          return {
-            ...doc.data(),
-            id: doc.id,
-            userId: doc.data().id,
-            replies,
-          };
-        })
-      );
-
-      setComments(commentsWithReplies.filter(Boolean));
-
-    setLoader(false);
-    } catch (error) {
+        const commentsSnapshot = await commentsRef.get();
+        setLastDoc(commentsSnapshot.docs[commentsSnapshot.docs.length - 1]);
+        const blockedCommentsRef = firestore()
+          .collection('Users')
+          .doc(UserInfoService.getUserId())
+          .collection('BlockedComments');
+  
+        const blockedCommentsSnapshot = await blockedCommentsRef.get();
+        const blockedCommentIds = new Set(
+          blockedCommentsSnapshot.docs.map((doc) => doc.id)
+        );
+  
+        const commentsWithReplies = await Promise.all(
+          commentsSnapshot.docs.map(async (doc) => {
+            if (blockedCommentIds.has(doc.id)) return null;
+  
+            const replies = await fetchRepliesRecursively(clipId, doc.id);
+  
+            return {
+              ...doc.data(),
+              id: doc.id,
+              userId: doc.data().id,
+              replies,
+            };
+          })
+        );
+  
+        setComments(commentsWithReplies.filter(Boolean));
+  
       setLoader(false);
-      console.error('Error fetching comments:', error);
-    }
+      } catch (error) {
+        setLoader(false);
+        console.error('Error fetching comments:', error);
+      }
   };
 
   const loadMoreComments = async () => {
     if (!lastDoc) return;
 
     const commentsRef = firestore()
-      .collection('Posts')
-      .doc(id)
+      .collection('Clips')
+      .doc(clipId)
       .collection('Comments')
       .orderBy('createdAt', 'desc')
       .startAfter(lastDoc)
@@ -149,24 +145,19 @@ const SinglePost = ({ navigation, route }) => {
     // (repeat processing logic here for replies etc.)
   };
 
-
-  useEffect(() => {
-    getComments();
-  }, [commensq]);
-
-
   const publishComment = async () => {
     if (!input || input == '') {
       return;
     }
-    setAddNewComment(false)
+    setAddNewComment(false);
+
     try {
       const batch = firestore().batch();
-      const postRef = firestore().collection('Posts').doc(id);
-      const commentsRef = postRef.collection('Comments').doc();
+      const clipRef = firestore().collection('Clips').doc(clipId);
+      const commentsRef = clipRef.collection('Comments').doc();
 
       const body = {
-        content: input,
+        comment: input,
         id: userProfile.userId,
         profileUrl: userProfile.profileUrl || null,
         displayName: userProfile.displayName,
@@ -174,38 +165,15 @@ const SinglePost = ({ navigation, route }) => {
         blockedCount: 0
       };
 
-      setInput('');
-      setCommensq((prev) => [...prev, body]);
-      batch.update(postRef, {
+      batch.update(clipRef, {
         activityCount: firestore.FieldValue.increment(1),
         totalComments: firestore.FieldValue.increment(1),
       });
       batch.set(commentsRef, body);
       await batch.commit();
-
-
-      setTimeout(async () => {
-        if (route.params?.postData?.data?.user != userProfile.userId) {
-          const refNoti = firestore().collection('Users').doc(route.params?.postData?.data?.user);
-          const notificationRef = refNoti.collection('Notification').doc();
-          const batchInner = firestore().batch();
-          batchInner.set(notificationRef, {
-            id: notificationRef.id,
-            type: 'COMMENT_POST',
-            displayName: userProfile.displayName,
-            profileUrl: userProfile.profileUrl || null,
-            senderId: userProfile.userId,
-            text: userProfile.displayName + ' commented on your post.',
-            postId: id,
-            date: new Date()
-          });
-          await batchInner.commit();
-        }
-
-      }, 500);
-      route.params?.commentCountIncrement &&
-        route.params?.commentCountIncrement();
-
+      setInput('');
+      setComments([body, ...comments]);
+      incrementCommentCount();
     } catch (error) {
       defaultAlert();
       errorLog('commenting', error);
@@ -213,16 +181,16 @@ const SinglePost = ({ navigation, route }) => {
   };
 
 
-  const updateComment = async (postId, commentId, newText, getComments) => {
+  const updateComment = async (clipId, commentId, newText, getComments) => {
     try {
       const commentRef = firestore()
-        .collection('Posts')
-        .doc(postId)
+        .collection('Clips')
+        .doc(clipId)
         .collection('Comments')
         .doc(commentId);
   
       await commentRef.update({
-        content: newText,
+        comment: newText,
       });
       setEditableComment(null);
       await getComments(); // Refresh comments
@@ -236,7 +204,7 @@ const SinglePost = ({ navigation, route }) => {
     setCommnetItem(null)
     setTimeout(() => {
       setEditableComment(comment);
-      setInput(comment.content);
+      setInput(comment.comment);
     }, 300);
    
   };
@@ -249,8 +217,8 @@ const SinglePost = ({ navigation, route }) => {
       setLoader(true);
 
     await firestore()
-      .collection('Posts')
-      .doc(id)
+      .collection('Clips')
+      .doc(clipId)
       .collection('Comments')
       .doc(commentId)
       .delete();
@@ -265,12 +233,13 @@ const SinglePost = ({ navigation, route }) => {
   };
 
 
-  const updateReply = async (postId, parentId, replyId, newText, getComments) => {
+
+  const updateReply = async (clipId, parentId, replyId, newText, getComments) => {
     setLoader(true);
     try {
       const replyRef = firestore()
-        .collection('Posts')
-        .doc(postId)
+        .collection('Clips')
+        .doc(clipId)
         .collection('Comments')
         .doc(parentId);
 
@@ -280,7 +249,7 @@ const SinglePost = ({ navigation, route }) => {
 
         for (const doc of snapshot.docs) {
           if (doc.id === replyId) {
-            await repliesRef.doc(replyId).update({ content: newText });
+            await repliesRef.doc(replyId).update({ comment: newText });
             return true;
           } else {
             const nestedRef = repliesRef.doc(doc.id);
@@ -301,7 +270,7 @@ const SinglePost = ({ navigation, route }) => {
   const editReply = (reply, parentId) => {
     setTimeout(() => {
       setEditableReply({ ...reply, parentId });
-      setReplyText(reply.content);
+      setReplyText(reply.comment);
     }, 200);
    
     setShowModal(false);
@@ -313,8 +282,8 @@ const SinglePost = ({ navigation, route }) => {
     Utility.showMessageWithActionCancel(async () => {
       setLoader(true);
       await firestore()
-        .collection('Posts')
-        .doc(id)
+        .collection('Clips')
+        .doc(clipId)
         .collection('Comments')
         .doc(parentId)
         .collection('Replies')
@@ -334,10 +303,10 @@ const SinglePost = ({ navigation, route }) => {
 
   };
 
-  const fetchRepliesRecursively: any = async (postId, commentId) => {
+  const fetchRepliesRecursively: any = async (clipId, commentId) => {
     const repliesRef = firestore()
-      .collection('Posts')
-      .doc(postId)
+      .collection('Clips')
+      .doc(clipId)
       .collection('Comments')
       .doc(commentId)
       .collection('Replies')
@@ -346,7 +315,7 @@ const SinglePost = ({ navigation, route }) => {
     const repliesSnapshot = await repliesRef.get();
 
     const replies = await Promise.all(repliesSnapshot.docs.map(async (doc) => {
-      const subReplies = await fetchRepliesRecursively(postId, doc.id); // 👈 recursive call
+      const subReplies = await fetchRepliesRecursively(clipId, doc.id); // 👈 recursive call
       return {
         ...doc.data(),
         id: doc.id,
@@ -364,61 +333,30 @@ const SinglePost = ({ navigation, route }) => {
     } else {
       setShowModal(false)
     }
-  }, [replyAndParentId])
+  }, [replyAndParentId]);
 
   const renderCommentModal = () => {
     return <AppModalView
       visible={true}>
       <View style={{ paddingHorizontal: 30, paddingRight: 20, paddingTop: 15, paddingBottom: 40, backgroundColor: '#fff' }}>
-       <TouchableOpacity
-         style={style.modalButton}
-         onPress={() => editComment(commnetItem)}
-         >
-         <Text style={style.modalText}>Edit</Text>
-       </TouchableOpacity>
-
-       <TouchableOpacity
-         style={style.modalButton}
-         onPress={() => deleteComment(commnetItem?.id)}>
-         <Text style={style.modalText}>Delete</Text>
-       </TouchableOpacity>
-        
         <TouchableOpacity
-          onPress={() => {setCommnetItem(null) }}
-          style={style.modalButton}>
-          <Text
-            style={style.modalText}>
-            Cancel
-          </Text>
+          style={styles.modalButton}
+          onPress={() => editComment(commnetItem)}
+        >
+          <Text style={styles.modalText}>Edit</Text>
         </TouchableOpacity>
-      </View>
-    </AppModalView>
 
-       
-  
-}
-
-  const renderModal = () => {
-   return <AppModalView
-      visible={showModal}>
-      <View style={{ paddingHorizontal: 30, paddingRight: 20, paddingTop: 15, paddingBottom: 40, backgroundColor: '#fff' }}>
-       <TouchableOpacity
-         style={style.modalButton}
-         onPress={() => editReply(replyAndParentId.reply, replyAndParentId.parentId)}>
-         <Text style={style.modalText}>Edit</Text>
-       </TouchableOpacity>
-
-       <TouchableOpacity
-         style={style.modalButton}
-         onPress={() => deleteReply(replyAndParentId.reply.id, replyAndParentId.parentId)}>
-         <Text style={style.modalText}>Delete</Text>
-       </TouchableOpacity>
-        
         <TouchableOpacity
-          onPress={() => { setReplyAndparentId(null) }}
-          style={style.modalButton}>
+          style={styles.modalButton}
+          onPress={() => deleteComment(commnetItem?.id)}>
+          <Text style={styles.modalText}>Delete</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => { setCommnetItem(null) }}
+          style={styles.modalButton}>
           <Text
-            style={style.modalText}>
+            style={styles.modalText}>
             Cancel
           </Text>
         </TouchableOpacity>
@@ -426,7 +364,35 @@ const SinglePost = ({ navigation, route }) => {
     </AppModalView>
   }
 
-  const renderReply = (reply, parentId) => {
+  const renderModal = () => {
+    return <AppModalView
+       visible={showModal}>
+       <View style={{ paddingHorizontal: 30, paddingRight: 20, paddingTop: 15, paddingBottom: 40, backgroundColor: '#fff' }}>
+        <TouchableOpacity
+          style={styles.modalButton}
+          onPress={() => editReply(replyAndParentId?.reply, replyAndParentId.parentId)}>
+          <Text style={styles.modalText}>Edit</Text>
+        </TouchableOpacity>
+ 
+        <TouchableOpacity
+          style={styles.modalButton}
+          onPress={() => deleteReply(replyAndParentId?.reply.id, replyAndParentId.parentId)}>
+          <Text style={styles.modalText}>Delete</Text>
+        </TouchableOpacity>
+         
+         <TouchableOpacity
+           onPress={() => { setReplyAndparentId(null) }}
+           style={styles.modalButton}>
+           <Text
+             style={styles.modalText}>
+             Cancel
+           </Text>
+         </TouchableOpacity>
+       </View>
+     </AppModalView>
+   }
+
+   const renderReply = (reply, parentId) => {
     const isReplyingToThis = replyingTo === reply.id;
     console.log('######')
     console.log(reply.userId + ' :::: ' + userProfile.userId)
@@ -470,14 +436,14 @@ const SinglePost = ({ navigation, route }) => {
                                     name="dots-three-horizontal"
                                     type="entypo"
                                     size={16}
-                                    style={style.iconRight}
+                                    style={styles.iconRight}
                                     color="#8c8c8c"
                                   />
               </TouchableOpacity>
             )}
           </View>
 
-          <Text style={{ marginHorizontal: 10, flex: 1 }}>{reply.content}</Text>
+          <Text style={{ marginHorizontal: 10, flex: 1 }}>{reply.comment}</Text>
 
 
           <View style={{ flexDirection: 'row', marginTop: 5 }}>
@@ -526,7 +492,7 @@ const SinglePost = ({ navigation, route }) => {
                         setLoader(true)
                         const temp =JSON.parse(JSON.stringify(editableReply));
                         setEditableReply(null)
-                        await updateReply(id, temp?.parentId, temp?.id, replyText, getComments);
+                        await updateReply(clipId, temp?.parentId, temp?.id, replyText, getComments);
                         
                         setLoader(false)
                       }
@@ -561,14 +527,16 @@ const SinglePost = ({ navigation, route }) => {
               flexDirection: 'row', 
               alignItems: 'center', 
               marginTop: 10,
+              marginRight: 20,
               borderWidth: 1,
-              borderColor: '#ccc', borderRadius: scale(15),
+              borderColor: '#ccc',
+               borderRadius: scale(15),
               padding: 10,
               }}>
               <TextInput
                 style={{
                   flex: 1,
-                 
+                  marginRight: 10
                 }}
                 placeholder="Write a reply..."
                 value={replyText}
@@ -576,7 +544,7 @@ const SinglePost = ({ navigation, route }) => {
               />
               <TouchableOpacity
                 onPress={() => {
-                  addReply(id, reply.id, replyText, userProfile, getComments);
+                  addClipReply(clipId, reply.id, replyText, userProfile, getComments);
                   setReplyingTo(null);
                   setReplyText('');
                 }}
@@ -586,8 +554,7 @@ const SinglePost = ({ navigation, route }) => {
                   borderRadius: scale(15),
                   backgroundColor: 'green',
                   justifyContent: 'center',
-                  alignItems: 'center',
-                  marginLeft: 10
+                  alignItems: 'center'
                 }}
               >
                 <Icon
@@ -599,9 +566,6 @@ const SinglePost = ({ navigation, route }) => {
               </TouchableOpacity>
             </View>
           )}
-
-
-          
 
           {/* Render nested replies */}
           {reply.replies && reply.replies.length > 0 && (
@@ -626,7 +590,7 @@ const SinglePost = ({ navigation, route }) => {
       const replyText = replyTextMap[parentCommentId];
       if (!replyText) return;
 
-      await addReply(id, parentCommentId, replyText, userProfile, getComments);
+      await addClipReply(clipId, parentCommentId, replyText, userProfile, getComments);
       setReplyTextMap(prev => ({ ...prev, [parentCommentId]: '' }));
       setReplyingToMap(prev => ({ ...prev, [parentCommentId]: false }));
     };
@@ -667,13 +631,13 @@ const SinglePost = ({ navigation, route }) => {
                                     name="dots-three-horizontal"
                                     type="entypo"
                                     size={16}
-                                    style={style.iconRight}
+                                    style={styles.iconRight}
                                     color="#8c8c8c"
                                   />
               </TouchableOpacity>
             )}
           </View>
-          <Text style={{ marginHorizontal: 10, flex: 1 }}>{item.content}</Text>
+          <Text style={{ marginHorizontal: 10, flex: 1 }}>{item.comment}</Text>
           <TouchableOpacity onPress={() => handleReplyPress(item.id)}>
       <Text style={{ color: 'blue', fontSize: 12, fontWeight: 'bold', marginRight: 10  }}>Reply</Text>
     </TouchableOpacity>
@@ -685,10 +649,12 @@ const SinglePost = ({ navigation, route }) => {
                 borderWidth: 1,
                 borderColor: '#ccc', borderRadius: scale(15),
                 padding: 10,
+                marginRight: 20,
                 }}>
                 <TextInput
                   style={{
-                    flex: 1
+                    flex: 1,
+                    marginRight: 10
                   }}
                   value={replyTextMap[item.id] || ''}
                 onChangeText={(text) =>
@@ -730,33 +696,44 @@ const SinglePost = ({ navigation, route }) => {
       </View>
     );
   };
+
+
+
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: '#fff' }}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
-      <View style={{ flex: 1 }}>
-        <Header navigation={navigation} otherProfile={true} />
-        <View style={{ flex: 1 }}>
+     <View
+        style={{flex: 1}}
+        keyboardShouldPersistTaps='handled'
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        
+      >
+       
+    <View
+      style={{
+       flex: 1
+      }}>
+      <Text style={styles.title}>Comments</Text>
+      <View style={styles.lineBreak} />
+      {(
+        <>
           <FlatList
-            ListHeaderComponent={
-              <PostCard
-                {...route.params.postData}
-                hideCommentBtn={true}
-                carousel={true}
-                navigation={navigation}
-                isAdmin={route.params.isAdmin}
-                goBack={() => navigation.goBack()}
-              />
-            }
-            extraData={comments}
+          keyboardShouldPersistTaps='handled'
             data={comments}
             renderItem={renderComment}
-            keyExtractor={(item) => item.id}
-            onEndReached={loadMoreComments}
+            keyExtractor={(item, index) => `${item.id}${index}`}
+            showsVerticalScrollIndicator={false}
+            style={{
+              paddingTop: vScale(10),
+              marginBottom: vScale(10 + 40),
+            }}
+            ListEmptyComponent={
+              <EmptyListText
+                title="Be the first to comment on this Clip."
+                style={{height: vScale(427) - bottom - vScale(10)}}
+              />
+            }
           />
-        </View>
-        {
+
+{
           addNewComment ?
           <AppModalView
           customStyle={{ opacity: 0.9 }}
@@ -864,8 +841,8 @@ const SinglePost = ({ navigation, route }) => {
                     height: vScale(40),
                   }}>
                   <TextInput
-                    value={editableComment.content}
-                    onChangeText={(value) => setEditableComment({ ...editableComment, content: value })}
+                    value={editableComment.comment}
+                    onChangeText={(value) => setEditableComment({ ...editableComment, comment: value })}
                     placeholder="Your thoughts ..."
                     style={{ width: scale(300) }}
                   />
@@ -880,7 +857,7 @@ const SinglePost = ({ navigation, route }) => {
                     }}
                     onPress={
                       () => {
-                        updateComment(id, editableComment.id, editableComment.content, getComments )
+                        updateComment(clipId, editableComment.id, editableComment.comment, getComments )
                       }
                     }>
                     <Icon
@@ -907,36 +884,121 @@ const SinglePost = ({ navigation, route }) => {
             :
             null
         }
-
-      </View>
-      {showModal ? renderModal() : null}
+        </>
+      )}
+    </View>
+    {showModal ? renderModal() : null}
       {ShowCommentModal ? renderCommentModal() : null}
       {loader ? <AppLoader /> : null}
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
-export default SinglePost;
+export default ClipComments;
 
-
-const style = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bgImage: {
-    height: hp(100),
-    resizeMode: 'contain',
+const styles = StyleSheet.create({
+  commentCont: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    // paddingHorizontal: scale(20),
     width: '100%',
-    alignItems: 'center',
-    //  opacity:.3
+    marginBottom: vScale(10),
   },
-  description: {
-    margin: 10,
-    fontSize: 12,
+  displayName: {
+    fontSize: mScale(14),
+    fontWeight: 'bold',
   },
-  iconRight: { marginRight: 20 },
+  profileImage: {marginRight: scale(10)},
+  comment: {
+    fontSize: mScale(14),
+    // marginTop: vScale(2),
+  },
+  createdAt: {
+    fontSize: mScale(10),
+    color: '#797979',
+    marginTop: vScale(2),
+  },
+  title: {
+    fontSize: mScale(18),
+    fontWeight: 'bold',
+  },
+  lineBreak: {
+    height: vScale(0.7),
+    backgroundColor: '#797979',
+    width: '100%',
+    marginTop: vScale(8),
+  },
+  listCont: {
+      backgroundColor: 'transparent',
+      width: wp(89),
+      padding: 4,
+      margin: 0,
+    },
+    inputCont: {
+      borderColor: '#eee',
+      borderWidth: 1,
+      padding: hp(1),
+      borderRadius: 10,
+      maxHeight: hp(18),
+      minHeight: hp(12),
+      marginTop: 10
+    },
+    errorStyle: { height: 0 },
+    buttons: {
+      backgroundColor: '#1b224d',
+      width: wp(30),
+      height: 40,
+      margin: 5,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 20,
+    },
+    buttonText: { color: '#fff', fontWeight: 'bold' },
+    cardFooter: {
+      height: hp(5),
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      alignItems: 'center',
+    },
+    cardFooterInner: { flexDirection: 'row', alignItems: 'center' },
+    cardFooterInnerText: { fontSize: 12, color: '#17234e', marginLeft: 5 },
+    shareContainer: {
+      width: wp(95),
+      minHeight: hp(65),
+      backgroundColor: '#fff',
+      borderRadius: wp(3),
+      paddingTop: hp(3),
+    },
+    avatar: {
+      height: hp(5),
+      width: hp(5),
+      borderRadius: hp(5),
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#d9d9d9',
+      padding: 0,
+      margin: 0,
+    },
+    link: {
+      fontSize: 16,
+      fontWeight: '400',
+      backgroundColor: 'rgba(36, 77, 201, 0.05)',
+      color: '#244dc9',
+    },
+    modalButton: {
+      height: 40, width: '100%',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#ddd',
+      borderRadius: 10,
+      marginBottom: 15
+    },
+    modalText: {
+      fontSize: 14,
+      fontWeight: '500'
+    },
+    iconRight: { marginRight: 20 },
   accountText: { fontSize: 18, fontWeight: 'bold' },
   accountsCategory: { margin: 10 },
   categoryContainer: {
@@ -945,74 +1007,4 @@ const style = StyleSheet.create({
     width: wp(85),
     marginTop: hp(5),
   },
-  listCont: {
-    backgroundColor: 'transparent',
-    width: wp(89),
-    padding: 4,
-    margin: 0,
-  },
-  inputCont: {
-    borderColor: '#eee',
-    borderWidth: 1,
-    padding: hp(1),
-    borderRadius: 10,
-    maxHeight: hp(18),
-    minHeight: hp(12),
-    marginTop: 10
-  },
-  errorStyle: { height: 0 },
-  buttons: {
-    backgroundColor: '#1b224d',
-    width: wp(30),
-    height: 40,
-    margin: 5,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 20,
-  },
-  buttonText: { color: '#fff', fontWeight: 'bold' },
-  cardFooter: {
-    height: hp(5),
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  cardFooterInner: { flexDirection: 'row', alignItems: 'center' },
-  cardFooterInnerText: { fontSize: 12, color: '#17234e', marginLeft: 5 },
-  shareContainer: {
-    width: wp(95),
-    minHeight: hp(65),
-    backgroundColor: '#fff',
-    borderRadius: wp(3),
-    paddingTop: hp(3),
-  },
-  avatar: {
-    height: hp(5),
-    width: hp(5),
-    borderRadius: hp(5),
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#d9d9d9',
-    padding: 0,
-    margin: 0,
-  },
-  link: {
-    fontSize: 16,
-    fontWeight: '400',
-    backgroundColor: 'rgba(36, 77, 201, 0.05)',
-    color: '#244dc9',
-  },
-  modalButton: {
-    height: 40, width: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#ddd',
-    borderRadius: 10,
-    marginBottom: 15
-  },
-  modalText: {
-    fontSize: 14,
-    fontWeight: '500'
-  }
 });
-

@@ -179,7 +179,7 @@ const appSearch =  ({ navigation }) => {
       <View style={{flex:1,flexDirection:'row',margin:5, alignItems: 'center'}}> 
       {
         data.index == 0 ?
-        <Text style={{marginRight: 10, fontWeight: 'bold'}}>Search for: </Text>
+        <Text style={{marginRight: 10, fontWeight: 'bold'}}></Text>
         :
         null
       }
@@ -291,7 +291,9 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     padding: 0,
     borderRadius: 20,
-    marginTop: 30
+    marginTop: 30,
+    borderTopWidth: 0,
+    borderBottomWidth: 0,
   },
   headerINput: { height: 50, borderRadius: 20, backgroundColor: '#e8e8e8' },
   selectedTab:{

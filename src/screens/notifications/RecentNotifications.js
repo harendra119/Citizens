@@ -29,17 +29,28 @@ const RecentNotifications = ({ navigation }) => {
     return months[month]
   }
   useEffect(() => {
-    const ref = firestore().collection('Users').doc(userId);
-    ref.collection('Notification').orderBy('date', 'desc')
-      .onSnapshot(
-        (snapshot) => {
-          var tempArr1 = [];
-          snapshot?.docs?.forEach((doc) => {
-            tempArr1.push(doc.data())
-          });
-          setNotifications(tempArr1);
-        });
-  }, [userProfile]);
+    if (!userId) return;
+
+    const ref = firestore().collection('Users').doc(userId).collection('Notification');
+
+    // Get the timestamp for 3 months ago
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    
+    // Firestore query: Get notifications in the last 3 months
+    const unsubscribe = ref
+      .where('date', '>=', firestore.Timestamp.fromDate(threeMonthsAgo)) // Filter for last 3 months
+      .orderBy('date', 'desc')
+      .onSnapshot((snapshot) => {
+        const tempArr1 = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setNotifications(tempArr1);
+      });
+
+    return () => unsubscribe(); // Cleanup subscription
+  }, [userId]);
 
 
   const onNotificationPress = (notification) => {
@@ -135,6 +146,7 @@ const RecentNotifications = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff'
   },
   row: {
     flexDirection: 'row',
